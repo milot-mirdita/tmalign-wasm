@@ -2,7 +2,7 @@
   "name": "tmalign-wasm",
   "version": "0.0.1",
   "description": "TMalign structure aligner port to WASM",
-  "main": "pulchra.js",
+  "main": "tmalign.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/milot-mirdita/tmalign-wasm.git"
