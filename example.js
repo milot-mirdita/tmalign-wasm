@@ -1,4 +1,4 @@
-import { tmalign } from './tmalign.js';
+import { tmalign, parse } from './tmalign.js';
 
 var pdb = `ATOM    867  CA  PHE A 111      11.895 -11.516  -5.804
 ATOM    878  CA  GLY A 112      14.800 -10.107  -7.788
@@ -43,4 +43,4 @@ ATOM   1171  CA  ALA A 150       0.044  11.272 -20.740
 ATOM   1176  CA  GLY A 151       0.909  14.596 -22.353
 `;
 
-tmalign(pdb, pdb).then((out) => { console.log(out); })
+tmalign(pdb, pdb).then((out) => { console.log(out); console.log(parse(out)); })
