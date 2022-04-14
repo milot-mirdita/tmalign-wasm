@@ -1,11 +1,11 @@
 import { default as createTmalign } from './tmalign-wasm.js'
-//import tmalignWasm from './tmalign-wasm.wasm'
+import tmalignWasm from './tmalign-wasm.wasm'
 
 function tmalign(pdb1, pdb2) {
     return new Promise((resolve, reject) => {
         let buffer = "";
         createTmalign({
-            //locateFile: () => tmalignWasm,
+            locateFile: () => tmalignWasm,
             print: (msg) => buffer += msg + "\n"
         }).then((instance) => {
             instance.FS.writeFile('/pdb1.pdb', pdb1);

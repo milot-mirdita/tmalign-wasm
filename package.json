@@ -1,0 +1,26 @@
+{
+  "name": "tmalign-wasm",
+  "version": "0.0.1",
+  "description": "TMalign structure aligner port to WASM",
+  "main": "pulchra.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/milot-mirdita/tmalign-wasm.git"
+  },
+  "files": [
+      "tmalign.js",
+      "tmalign-wasm.js",
+      "tmalign-wasm.wasm"
+  ],
+  "keywords": [
+    "proteins",
+    "bioinformatics",
+    "align"
+  ],
+  "author": "Milot Mirdita <milot@mirdita.de>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/milot-mirdita/tmalign-wasm/issues"
+  },
+  "homepage": "https://github.com/milot-mirdita/tmalign-wasm#readme"
+}
