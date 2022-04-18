@@ -70,7 +70,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include <malloc.h>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -3905,9 +3904,15 @@ void clean_up_after_approx_TM(int *invmap0, int *invmap,
 {
     delete [] invmap0;
     delete [] invmap;
-    DeleteArray(&score, xlen+1);
-    DeleteArray(&path, xlen+1);
-    DeleteArray(&val, xlen+1);
+    if(score != NULL) {
+        DeleteArray(&score, xlen + 1);
+    }
+    if(path != NULL) {
+        DeleteArray(&path, xlen + 1);
+    }
+    if(val != NULL) {
+        DeleteArray(&val, xlen + 1);
+    }
     DeleteArray(&xtm, minlen);
     DeleteArray(&ytm, minlen);
     DeleteArray(&xt, xlen);
@@ -3939,9 +3944,9 @@ int TMalign_main(double **xa, double **ya,
     double Lnorm;         //normalization length
     double score_d8,d0,d0_search,dcu0;//for TMscore search
     double t[3], u[3][3]; //Kabsch translation vector and rotation matrix
-    double **score;       // Input score table for dynamic programming
-    bool   **path;        // for dynamic programming  
-    double **val;         // for dynamic programming  
+    double **score = NULL;       // Input score table for dynamic programming
+    bool   **path = NULL;        // for dynamic programming
+    double **val = NULL;         // for dynamic programming
     double **xtm, **ytm;  // for TMscore search engine
     double **xt;          //for saving the superposed version of r_1 or xtm
     double **r1, **r2;    // for Kabsch rotation
@@ -3950,9 +3955,6 @@ int TMalign_main(double **xa, double **ya,
     /* allocate memory     */
     /***********************/
     int minlen = min(xlen, ylen);
-    NewArray(&score, xlen+1, ylen+1);
-    NewArray(&path, xlen+1, ylen+1);
-    NewArray(&val, xlen+1, ylen+1);
     NewArray(&xtm, minlen, 3);
     NewArray(&ytm, minlen, 3);
     NewArray(&xt, xlen, 3);
@@ -4030,6 +4032,10 @@ int TMalign_main(double **xa, double **ya,
     /******************************************************/
     if (!bAlignStick)
     {
+        NewArray(&score, xlen+1, ylen+1);
+        NewArray(&path, xlen+1, ylen+1);
+        NewArray(&val, xlen+1, ylen+1);
+
         get_initial(r1, r2, xtm, ytm, xa, ya, xlen, ylen, invmap0, d0,
             d0_search, fast_opt, t, u);
         TM = detailed_search(r1, r2, xtm, ytm, xt, xa, ya, xlen, ylen, invmap0,
