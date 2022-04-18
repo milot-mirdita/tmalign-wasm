@@ -70,6 +70,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <malloc.h>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -84,153 +85,153 @@ using namespace std;
 
 void print_version()
 {
-    cout <<
-         "\n"
-         " *********************************************************************\n"
-         " * TM-align (Version 20220412): protein structure alignment          *\n"
-         " * References: Y Zhang, J Skolnick. Nucl Acids Res 33, 2302-9 (2005) *\n"
-         " * Please email comments and suggestions to yangzhanglab@umich.edu   *\n"
-         " *********************************************************************"
-         << endl;
+    cout << 
+"\n"
+" *********************************************************************\n"
+" * TM-align (Version 20220412): protein structure alignment          *\n"
+" * References: Y Zhang, J Skolnick. Nucl Acids Res 33, 2302-9 (2005) *\n"
+" * Please email comments and suggestions to yangzhanglab@umich.edu   *\n"
+" *********************************************************************"
+    << endl;
 }
 
 void print_extra_help()
 {
     cout <<
-         "Additional options:\n"
-         "    -dir     Perform all-against-all alignment among the list of PDB\n"
-         "             chains listed by 'chain_list' under 'chain_folder'. Note\n"
-         "             that the slash is necessary.\n"
-         "             $ TMalign -dir chain_folder/ chain_list\n"
-         "\n"
-         "    -dir1    Use chain2 to search a list of PDB chains listed by 'chain1_list'\n"
-         "             under 'chain1_folder'. Note that the slash is necessary.\n"
-         "             $ TMalign -dir1 chain1_folder/ chain1_list chain2\n"
-         "\n"
-         "    -dir2    Use chain1 to search a list of PDB chains listed by 'chain2_list'\n"
-         "             under 'chain2_folder'\n"
-         "             $ TMalign chain1 -dir2 chain2_folder/ chain2_list\n"
-         "\n"
-         "    -suffix  (Only when -dir1 and/or -dir2 are set, default is empty)\n"
-         "             add file name suffix to files listed by chain1_list or chain2_list\n"
-         "\n"
-         "    -atom    4-character atom name used to represent a residue.\n"
-         "             Default is \" CA \" for proteins\n"
-         "             (note the spaces before and after CA).\n"
-         "\n"
-         "    -ter     Strings to mark the end of a chain\n"
-         "             3: (default) TER, ENDMDL, END or different chain ID\n"
-         "             2: ENDMDL, END, or different chain ID\n"
-         "             1: ENDMDL or END\n"
-         "             0: (default in the first C++ TMalign) end of file\n"
-         "\n"
-         "    -split   Whether to split PDB file into multiple chains\n"
-         "             0: (default) treat the whole structure as one single chain\n"
-         "             1: treat each MODEL as a separate chain (-ter should be 0)\n"
-         "             2: treat each chain as a seperate chain (-ter should be <=1)\n"
-         "\n"
-         "    -outfmt  Output format\n"
-         "             0: (default) full output\n"
-         "             1: fasta format compact output\n"
-         "             2: tabular format very compact output\n"
-         "            -1: full output, but without version or citation information\n"
-         "\n"
-         "    -byresi  Whether to assume residue index correspondence between the\n"
-         "             two structures.\n"
-         "             0: (default) sequence independent alignment\n"
-         "             1: (same as TMscore program) sequence-dependent superposition,\n"
-         "                i.e. align by residue index\n"
-         "             2: (same as TMscore -c, should be used with -ter <=1)\n"
-         "                align by residue index and chain ID\n"
-         "             3: (similar to TMscore -c, should be used with -ter <=1)\n"
-         "                align by residue index and order of chain\n"
-         "\n"
-         "    -TMcut   -1: (default) do not consider TMcut\n"
-         "             Values in [0.5,1): Do not proceed with TM-align for this\n"
-         "                 structure pair if TM-score is unlikely to reach TMcut.\n"
-         "                 TMcut is normalized is set by -a option:\n"
-         "                 -2: normalized by longer structure length\n"
-         "                 -1: normalized by shorter structure length\n"
-         "                  0: (default, same as F) normalized by second structure\n"
-         "                  1: same as T, normalized by average structure length\n"
-         "\n"
-         "    -mirror  Whether to align the mirror image of input structure\n"
-         "             0: (default) do not align mirrored structure\n"
-         "             1: align mirror of chain1 to origin chain2\n"
-         "\n"
-         "    -het     Whether to align residues marked as 'HETATM' in addition to 'ATOM  '\n"
-         "             0: (default) only align 'ATOM  ' residues\n"
-         "             1: align both 'ATOM  ' and 'HETATM' residues\n"
-         "\n"
-         "    -infmt1  Input format for chain1\n"
-         "    -infmt2  Input format for chain2\n"
-         "            -1: (default) automatically detect PDB or PDBx/mmCIF format\n"
-         "             0: PDB format\n"
-         "             1: SPICKER format\n"
-         "             2: xyz format\n"
-         "             3: PDBx/mmCIF format\n"
-         <<endl;
+"Additional options:\n"
+"    -dir     Perform all-against-all alignment among the list of PDB\n"
+"             chains listed by 'chain_list' under 'chain_folder'. Note\n"
+"             that the slash is necessary.\n"
+"             $ TMalign -dir chain_folder/ chain_list\n"
+"\n"
+"    -dir1    Use chain2 to search a list of PDB chains listed by 'chain1_list'\n"
+"             under 'chain1_folder'. Note that the slash is necessary.\n"
+"             $ TMalign -dir1 chain1_folder/ chain1_list chain2\n"
+"\n"
+"    -dir2    Use chain1 to search a list of PDB chains listed by 'chain2_list'\n"
+"             under 'chain2_folder'\n"
+"             $ TMalign chain1 -dir2 chain2_folder/ chain2_list\n"
+"\n"
+"    -suffix  (Only when -dir1 and/or -dir2 are set, default is empty)\n"
+"             add file name suffix to files listed by chain1_list or chain2_list\n"
+"\n"
+"    -atom    4-character atom name used to represent a residue.\n"
+"             Default is \" CA \" for proteins\n"
+"             (note the spaces before and after CA).\n"
+"\n"
+"    -ter     Strings to mark the end of a chain\n"
+"             3: (default) TER, ENDMDL, END or different chain ID\n"
+"             2: ENDMDL, END, or different chain ID\n"
+"             1: ENDMDL or END\n"
+"             0: (default in the first C++ TMalign) end of file\n"
+"\n"
+"    -split   Whether to split PDB file into multiple chains\n"
+"             0: (default) treat the whole structure as one single chain\n"
+"             1: treat each MODEL as a separate chain (-ter should be 0)\n"
+"             2: treat each chain as a seperate chain (-ter should be <=1)\n"
+"\n"
+"    -outfmt  Output format\n"
+"             0: (default) full output\n"
+"             1: fasta format compact output\n"
+"             2: tabular format very compact output\n"
+"            -1: full output, but without version or citation information\n"
+"\n"
+"    -byresi  Whether to assume residue index correspondence between the\n" 
+"             two structures.\n"
+"             0: (default) sequence independent alignment\n"
+"             1: (same as TMscore program) sequence-dependent superposition,\n"
+"                i.e. align by residue index\n"
+"             2: (same as TMscore -c, should be used with -ter <=1)\n"
+"                align by residue index and chain ID\n"
+"             3: (similar to TMscore -c, should be used with -ter <=1)\n"
+"                align by residue index and order of chain\n"
+"\n"
+"    -TMcut   -1: (default) do not consider TMcut\n"
+"             Values in [0.5,1): Do not proceed with TM-align for this\n"
+"                 structure pair if TM-score is unlikely to reach TMcut.\n"
+"                 TMcut is normalized is set by -a option:\n"
+"                 -2: normalized by longer structure length\n"
+"                 -1: normalized by shorter structure length\n"
+"                  0: (default, same as F) normalized by second structure\n"
+"                  1: same as T, normalized by average structure length\n"
+"\n"
+"    -mirror  Whether to align the mirror image of input structure\n"
+"             0: (default) do not align mirrored structure\n"
+"             1: align mirror of chain1 to origin chain2\n"
+"\n"
+"    -het     Whether to align residues marked as 'HETATM' in addition to 'ATOM  '\n"
+"             0: (default) only align 'ATOM  ' residues\n"
+"             1: align both 'ATOM  ' and 'HETATM' residues\n"
+"\n"
+"    -infmt1  Input format for chain1\n"
+"    -infmt2  Input format for chain2\n"
+"            -1: (default) automatically detect PDB or PDBx/mmCIF format\n"
+"             0: PDB format\n"
+"             1: SPICKER format\n"
+"             2: xyz format\n"
+"             3: PDBx/mmCIF format\n"
+    <<endl;
 }
 
 void print_help(bool h_opt=false)
 {
     print_version();
     cout <<
-         "\n"
-         "Usage: TMalign PDB1.pdb PDB2.pdb [Options]\n"
-         "\n"
-         "Options:\n"
-         "    -u    TM-score normalized by user assigned length (the same as -L)\n"
-         "          warning: it should be >= minimum length of the two structures\n"
-         "          otherwise, TM-score may be >1\n"
-         "\n"
-         "    -a    TM-score normalized by the average length of two structures\n"
-         "          T or F, (default F)\n"
-         "\n"
-         "    -i    Start with an alignment specified in fasta file 'align.txt'\n"
-         "\n"
-         "    -I    Stick to the alignment specified in 'align.txt'\n"
-         "\n"
-         "    -m    Output TM-align rotation matrix\n"
-         "\n"
-         "    -d    TM-score scaled by an assigned d0, e.g. 5 Angstroms\n"
-         "\n"
-         "    -o    Output the superposition to 'TM_sup*'\n"
-         "            $ TMalign PDB1.pdb PDB2.pdb -o TM_sup\n"
-         "          View superposed C-alpha traces of aligned regions by RasMol or PyMOL:\n"
-         "            $ rasmol -script TM_sup\n"
-         "            $ pymol -d @TM_sup.pml\n"
-         "          View superposed C-alpha traces of all regions:\n"
-         "            $ rasmol -script TM_sup_all\n"
-         "            $ pymol -d @TM_sup_all.pml\n"
-         "          View superposed full-atom structures of aligned regions:\n"
-         "            $ rasmol -script TM_sup_atm\n"
-         "            $ pymol -d @TM_sup_atm.pml\n"
-         "          View superposed full-atom structures of all regions:\n"
-         "            $ rasmol -script TM_sup_all_atm\n"
-         "            $ pymol -d @TM_sup_all_atm.pml\n"
-         "          View superposed full-atom structures and ligands of all regions\n"
-         "            $ rasmol -script TM_sup_all_atm_lig\n"
-         "            $ pymol -d @TM_sup_all_atm_lig.pml\n"
-         "\n"
-         " -fast    Fast but slightly inaccurate alignment by fTM-align algorithm\n"
-         "\n"
-         "   -cp    Alignment with circular permutation\n"
-         "\n"
-         "    -v    Print the version of TM-align\n"
-         "\n"
-         "    -h    Print the full help message, including additional options\n"
-         "\n"
-         "    (Options -u, -a, -d, -o will not change the final structure alignment)\n\n"
-         "Example usages:\n"
-         "    TMalign PDB1.pdb PDB2.pdb\n"
-         "    TMalign PDB1.pdb PDB2.pdb -u 100 -d 5.0\n"
-         "    TMalign PDB1.pdb PDB2.pdb -a T -o PDB1.sup\n"
-         "    TMalign PDB1.pdb PDB2.pdb -i align.txt\n"
-         "    TMalign PDB1.pdb PDB2.pdb -m matrix.txt\n"
-         "    TMalign PDB1.pdb PDB2.pdb -fast\n"
-         "    TMalign PDB1.pdb PDB2.pdb -cp\n"
-         <<endl;
+"\n"
+"Usage: TMalign PDB1.pdb PDB2.pdb [Options]\n"
+"\n"
+"Options:\n"
+"    -u    TM-score normalized by user assigned length (the same as -L)\n"
+"          warning: it should be >= minimum length of the two structures\n"
+"          otherwise, TM-score may be >1\n"
+"\n"
+"    -a    TM-score normalized by the average length of two structures\n"
+"          T or F, (default F)\n"
+"\n"
+"    -i    Start with an alignment specified in fasta file 'align.txt'\n"
+"\n"
+"    -I    Stick to the alignment specified in 'align.txt'\n"
+"\n"
+"    -m    Output TM-align rotation matrix\n"
+"\n"
+"    -d    TM-score scaled by an assigned d0, e.g. 5 Angstroms\n"
+"\n"
+"    -o    Output the superposition to 'TM_sup*'\n"
+"            $ TMalign PDB1.pdb PDB2.pdb -o TM_sup\n"
+"          View superposed C-alpha traces of aligned regions by RasMol or PyMOL:\n"
+"            $ rasmol -script TM_sup\n"
+"            $ pymol -d @TM_sup.pml\n"
+"          View superposed C-alpha traces of all regions:\n"
+"            $ rasmol -script TM_sup_all\n"
+"            $ pymol -d @TM_sup_all.pml\n"
+"          View superposed full-atom structures of aligned regions:\n"
+"            $ rasmol -script TM_sup_atm\n"
+"            $ pymol -d @TM_sup_atm.pml\n"
+"          View superposed full-atom structures of all regions:\n"
+"            $ rasmol -script TM_sup_all_atm\n"
+"            $ pymol -d @TM_sup_all_atm.pml\n"
+"          View superposed full-atom structures and ligands of all regions\n"
+"            $ rasmol -script TM_sup_all_atm_lig\n"
+"            $ pymol -d @TM_sup_all_atm_lig.pml\n"
+"\n"
+" -fast    Fast but slightly inaccurate alignment by fTM-align algorithm\n"
+"\n"
+"   -cp    Alignment with circular permutation\n"
+"\n"
+"    -v    Print the version of TM-align\n"
+"\n"
+"    -h    Print the full help message, including additional options\n"
+"\n"
+"    (Options -u, -a, -d, -o will not change the final structure alignment)\n\n"
+"Example usages:\n"
+"    TMalign PDB1.pdb PDB2.pdb\n"
+"    TMalign PDB1.pdb PDB2.pdb -u 100 -d 5.0\n"
+"    TMalign PDB1.pdb PDB2.pdb -a T -o PDB1.sup\n"
+"    TMalign PDB1.pdb PDB2.pdb -i align.txt\n"
+"    TMalign PDB1.pdb PDB2.pdb -m matrix.txt\n"
+"    TMalign PDB1.pdb PDB2.pdb -fast\n"
+"    TMalign PDB1.pdb PDB2.pdb -cp\n"
+    <<endl;
 
     if (h_opt) print_extra_help();
 
@@ -289,7 +290,7 @@ string AAmap(char A)
     if (A=='T') return "THR";
     if (A=='U') return "SEC";
     if (A=='V') return "VAL";
-    if (A=='W') return "TRP";
+    if (A=='W') return "TRP";    
     if (A=='Y') return "TYR";
     if (A=='Z') return "GLX";
     return "UNK";
@@ -319,7 +320,7 @@ char AAmap(const string &AA)
     if (AA.compare("THR")==0 || AA.compare("DTH")==0) return 'T';
     if (AA.compare("SEC")==0) return 'U';
     if (AA.compare("VAL")==0 || AA.compare("DVA")==0) return 'V';
-    if (AA.compare("TRP")==0 || AA.compare("DTR")==0) return 'W';
+    if (AA.compare("TRP")==0 || AA.compare("DTR")==0) return 'W';    
     if (AA.compare("TYR")==0 || AA.compare("DTY")==0) return 'Y';
     if (AA.compare("GLX")==0) return 'Z';
     return 'X';
@@ -330,7 +331,7 @@ char AAmap(const string &AA)
  * line_vec      - output vector 
  * delimiter     - delimiter */
 void split(const string &line, vector<string> &line_vec,
-           const char delimiter=' ')
+    const char delimiter=' ')
 {
     bool within_word = false;
     for (int pos=0;pos<line.size();pos++)
@@ -367,7 +368,7 @@ string Trim(const string &inputString)
  * space_vec     - output vector 
  * delimiter     - delimiter */
 void split_white(const string &line, vector<string> &line_vec,
-                 vector<string>&white_vec, const char delimiter=' ')
+    vector<string>&white_vec, const char delimiter=' ')
 {
     bool within_word = false;
     for (int pos=0;pos<line.size();pos++)
@@ -394,9 +395,9 @@ void split_white(const string &line, vector<string> &line_vec,
 }
 
 size_t get_PDB_lines(const string filename,
-                     vector<vector<string> >&PDB_lines, vector<string> &chainID_list,
-                     vector<int> &mol_vec, const int ter_opt, const int infmt_opt,
-                     const string atom_opt, const int split_opt, const int het_opt)
+    vector<vector<string> >&PDB_lines, vector<string> &chainID_list,
+    vector<int> &mol_vec, const int ter_opt, const int infmt_opt,
+    const string atom_opt, const int split_opt, const int het_opt)
 {
     size_t i=0; // resi i.e. atom index
     string line;
@@ -405,7 +406,7 @@ size_t get_PDB_lines(const string filename,
     bool select_atom=false;
     size_t model_idx=0;
     vector<string> tmp_str_vec;
-
+    
     ifstream fin;
     fin.open(filename.c_str());
 
@@ -416,19 +417,19 @@ size_t get_PDB_lines(const string filename,
             getline(fin, line);
             if (infmt_opt==-1 && line.compare(0,5,"loop_")==0) // PDBx/mmCIF
                 return get_PDB_lines(filename,PDB_lines,chainID_list,
-                                     mol_vec, ter_opt, 3, atom_opt, split_opt,het_opt);
+                    mol_vec, ter_opt, 3, atom_opt, split_opt,het_opt);
             if (i > 0)
             {
                 if      (ter_opt>=1 && line.compare(0,3,"END")==0) break;
                 else if (ter_opt>=3 && line.compare(0,3,"TER")==0) break;
             }
             if (split_opt && line.compare(0,3,"END")==0) chainID=0;
-            if ((line.compare(0, 6, "ATOM  ")==0 ||
-                 (line.compare(0, 6, "HETATM")==0 && het_opt))
+            if ((line.compare(0, 6, "ATOM  ")==0 || 
+                (line.compare(0, 6, "HETATM")==0 && het_opt))
                 && line.size()>=54 && (line[16]==' ' || line[16]=='A'))
             {
                 if (atom_opt=="auto")
-                    select_atom=(line.compare(12,4," CA ")==0);
+                        select_atom=(line.compare(12,4," CA ")==0);
                 else    select_atom=(line.compare(12,4,atom_opt)==0);
                 if (select_atom)
                 {
@@ -513,8 +514,8 @@ size_t get_PDB_lines(const string filename,
             {
                 fin   >>x>>y>>z;
                 i8_stream<<"ATOM   "<<setw(4)<<i+1<<"  CA  UNK  "<<setw(4)
-                         <<i+1<<"    "<<setiosflags(ios::fixed)<<setprecision(3)
-                         <<setw(8)<<x<<setw(8)<<y<<setw(8)<<z;
+                    <<i+1<<"    "<<setiosflags(ios::fixed)<<setprecision(3)
+                    <<setw(8)<<x<<setw(8)<<y<<setw(8)<<z;
                 line=i8_stream.str();
                 i8_stream.str(string());
                 PDB_lines.back().push_back(line);
@@ -542,8 +543,8 @@ size_t get_PDB_lines(const string filename,
             {
                 getline(fin, line);
                 i8_stream<<"ATOM   "<<setw(4)<<i+1<<"  CA  "
-                         <<AAmap(line[0])<<"  "<<setw(4)<<i+1<<"    "
-                         <<line.substr(2,8)<<line.substr(11,8)<<line.substr(20,8);
+                    <<AAmap(line[0])<<"  "<<setw(4)<<i+1<<"    "
+                    <<line.substr(2,8)<<line.substr(11,8)<<line.substr(20,8);
                 line=i8_stream.str();
                 i8_stream.str(string());
                 PDB_lines.back().push_back(line);
@@ -560,8 +561,8 @@ size_t get_PDB_lines(const string filename,
         vector<string> line_vec;
         string alt_id=".";  // alternative location indicator
         string asym_id="."; // this is similar to chainID, except that
-        // chainID is char while asym_id is a string
-        // with possibly multiple char
+                            // chainID is char while asym_id is a string
+                            // with possibly multiple char
         string prev_asym_id="";
         string AA="";       // residue name
         string atom="";
@@ -602,10 +603,10 @@ size_t get_PDB_lines(const string filename,
                 if (_atom_site.count("group_PDB")*
                     _atom_site.count("label_atom_id")*
                     _atom_site.count("label_comp_id")*
-                    (_atom_site.count("auth_asym_id")+
-                     _atom_site.count("label_asym_id"))*
-                    (_atom_site.count("auth_seq_id")+
-                     _atom_site.count("label_seq_id"))*
+                   (_atom_site.count("auth_asym_id")+
+                    _atom_site.count("label_asym_id"))*
+                   (_atom_site.count("auth_seq_id")+
+                    _atom_site.count("label_seq_id"))*
                     _atom_site.count("Cartn_x")*
                     _atom_site.count("Cartn_y")*
                     _atom_site.count("Cartn_z")==0)
@@ -619,8 +620,8 @@ size_t get_PDB_lines(const string filename,
             line_vec.clear();
             split(line,line_vec);
             if (line_vec[_atom_site["group_PDB"]]!="ATOM" && (het_opt==0 ||
-                                                              line_vec[_atom_site["group_PDB"]]!="HETATM")) continue;
-
+                line_vec[_atom_site["group_PDB"]]!="HETATM")) continue;
+            
             alt_id=".";
             if (_atom_site.count("label_alt_id")) // in 39.4 % of entries
                 alt_id=line_vec[_atom_site["label_alt_id"]];
@@ -642,17 +643,17 @@ size_t get_PDB_lines(const string filename,
             else if (AA.size()>=4) continue;
 
             if (atom_opt=="auto")
-                select_atom=(atom==" CA ");
+                    select_atom=(atom==" CA ");
             else    select_atom=(atom==atom_opt);
 
             if (!select_atom) continue;
 
             if (_atom_site.count("auth_asym_id"))
-                asym_id=line_vec[_atom_site["auth_asym_id"]];
+                 asym_id=line_vec[_atom_site["auth_asym_id"]];
             else asym_id=line_vec[_atom_site["label_asym_id"]];
             if (asym_id==".") asym_id=" ";
-
-            if (_atom_site.count("pdbx_PDB_model_num") &&
+            
+            if (_atom_site.count("pdbx_PDB_model_num") && 
                 model_index!=line_vec[_atom_site["pdbx_PDB_model_num"]])
             {
                 model_index=line_vec[_atom_site["pdbx_PDB_model_num"]];
@@ -664,7 +665,7 @@ size_t get_PDB_lines(const string filename,
                     prev_asym_id=asym_id;
 
                     if (split_opt==1 && ter_opt==0) chainID_list.push_back(
-                                ':'+model_index);
+                        ':'+model_index);
                     else if (split_opt==2 && ter_opt==0)
                         chainID_list.push_back(':'+model_index+':'+asym_id);
                     else if (split_opt==2 && ter_opt==1)
@@ -681,7 +682,7 @@ size_t get_PDB_lines(const string filename,
                     mol_vec.push_back(0);
 
                     if (split_opt==1 && ter_opt==0) chainID_list.push_back(
-                                ':'+model_index);
+                        ':'+model_index);
                     else if (split_opt==2 && ter_opt==0)
                         chainID_list.push_back(':'+model_index+':'+asym_id);
                     else if (split_opt==2 && ter_opt==1)
@@ -694,9 +695,9 @@ size_t get_PDB_lines(const string filename,
             else mol_vec.back()--;
 
             if (_atom_site.count("auth_seq_id"))
-                resi=line_vec[_atom_site["auth_seq_id"]];
+                 resi=line_vec[_atom_site["auth_seq_id"]];
             else resi=line_vec[_atom_site["label_seq_id"]];
-            if (_atom_site.count("pdbx_PDB_ins_code") &&
+            if (_atom_site.count("pdbx_PDB_ins_code") && 
                 line_vec[_atom_site["pdbx_PDB_ins_code"]]!="?")
                 resi+=line_vec[_atom_site["pdbx_PDB_ins_code"]][0];
             else resi+=" ";
@@ -707,11 +708,11 @@ size_t get_PDB_lines(const string filename,
 
             i++;
             i8_stream<<"ATOM  "
-                     <<setw(5)<<i<<" "<<atom<<" "<<AA<<" "<<asym_id[0]
-                     <<setw(5)<<resi.substr(0,5)<<"   "
-                     <<setw(8)<<line_vec[_atom_site["Cartn_x"]].substr(0,8)
-                     <<setw(8)<<line_vec[_atom_site["Cartn_y"]].substr(0,8)
-                     <<setw(8)<<line_vec[_atom_site["Cartn_z"]].substr(0,8);
+                <<setw(5)<<i<<" "<<atom<<" "<<AA<<" "<<asym_id[0]
+                <<setw(5)<<resi.substr(0,5)<<"   "
+                <<setw(8)<<line_vec[_atom_site["Cartn_x"]].substr(0,8)
+                <<setw(8)<<line_vec[_atom_site["Cartn_y"]].substr(0,8)
+                <<setw(8)<<line_vec[_atom_site["Cartn_z"]].substr(0,8);
             PDB_lines.back().push_back(i8_stream.str());
             i8_stream.str(string());
         }
@@ -735,13 +736,13 @@ size_t get_PDB_lines(const string filename,
  * if split_opt >=1 and ter_opt ==0, each sequence is a separate entry.
  * if split_opt ==0 and ter_opt ==0, all sequences are combined into one */
 size_t get_FASTA_lines(const string filename,
-                       vector<vector<string> >&FASTA_lines, vector<string> &chainID_list,
-                       vector<int> &mol_vec, const int ter_opt=3, const int split_opt=0)
+    vector<vector<string> >&FASTA_lines, vector<string> &chainID_list,
+    vector<int> &mol_vec, const int ter_opt=3, const int split_opt=0)
 {
     string line;
     vector<string> tmp_str_vec;
     int l;
-
+    
     ifstream fin;
     fin.open(filename.c_str());
 
@@ -771,7 +772,7 @@ size_t get_FASTA_lines(const string filename,
         {
             FASTA_lines.back()[0]+=line;
             for (l=0;l<line.size();l++) mol_vec.back()+=
-                                                ('a'<=line[l] && line[l]<='z')-('A'<=line[l] && line[l]<='Z');
+                ('a'<=line[l] && line[l]<='z')-('A'<=line[l] && line[l]<='Z');
         }
     }
 
@@ -785,8 +786,8 @@ size_t get_FASTA_lines(const string filename,
  * assuming that "sequence" contains two empty strings.
  * return length of alignment, including gap. */
 int extract_aln_from_resi(vector<string> &sequence, char *seqx, char *seqy,
-                          const vector<string> resi_vec1, const vector<string> resi_vec2,
-                          const int byresi_opt)
+    const vector<string> resi_vec1, const vector<string> resi_vec2,
+    const int byresi_opt)
 {
     sequence.clear();
     sequence.push_back("");
@@ -827,8 +828,8 @@ int extract_aln_from_resi(vector<string> &sequence, char *seqx, char *seqy,
     while(i1<xlen && i2<ylen)
     {
         if ((byresi_opt<=2 && resi_vec1[i1]==resi_vec2[i2]) || (byresi_opt==3
-                                                                && resi_vec1[i1].substr(0,5)==resi_vec2[i2].substr(0,5)
-                                                                && chainID_map1[resi_vec1[i1][5]]==chainID_map2[resi_vec2[i2][5]]))
+             && resi_vec1[i1].substr(0,5)==resi_vec2[i2].substr(0,5)
+             && chainID_map1[resi_vec1[i1][5]]==chainID_map2[resi_vec2[i2][5]]))
         {
             sequence[0]+=seqx[i1++];
             sequence[1]+=seqy[i2++];
@@ -851,7 +852,7 @@ int extract_aln_from_resi(vector<string> &sequence, char *seqx, char *seqy,
 }
 
 int read_PDB(const vector<string> &PDB_lines, double **a, char *seq,
-             vector<string> &resi_vec, const int byresi_opt)
+    vector<string> &resi_vec, const int byresi_opt)
 {
     int i;
     for (i=0;i<PDB_lines.size();i++)
@@ -865,7 +866,7 @@ int read_PDB(const vector<string> &PDB_lines, double **a, char *seq,
                                               PDB_lines[i][21]);
         if (byresi_opt==1) resi_vec.push_back(PDB_lines[i].substr(22,5));
     }
-    seq[i]='\0';
+    seq[i]='\0'; 
     return i;
 }
 
@@ -874,7 +875,7 @@ double dist(double x[3], double y[3])
     double d1=x[0]-y[0];
     double d2=x[1]-y[1];
     double d3=x[2]-y[2];
-
+ 
     return (d1*d1 + d2*d2 + d3*d3);
 }
 
@@ -895,21 +896,21 @@ void do_rotation(double **x, double **x1, int len, double t[3], double u[3][3])
     for(int i=0; i<len; i++)
     {
         transform(t, u, &x[i][0], &x1[i][0]);
-    }
+    }    
 }
 
 /* read user specified pairwise alignment from 'fname_lign' to 'sequence'.
  * This function should only be called by main function, as it will
  * terminate a program if wrong alignment is given */
 void read_user_alignment(vector<string>&sequence, const string &fname_lign,
-                         const int i_opt)
+    const int i_opt)
 {
     if (fname_lign == "")
         PrintErrorAndQuit("Please provide a file name for option -i!");
     // open alignment file
     int n_p = 0;// number of structures in alignment file
     string line;
-
+    
     ifstream fileIn(fname_lign.c_str());
     if (fileIn.is_open())
     {
@@ -927,7 +928,7 @@ void read_user_alignment(vector<string>&sequence, const string &fname_lign,
         fileIn.close();
     }
     else PrintErrorAndQuit("ERROR! Alignment file does not exist.");
-
+    
     if (n_p < 2)
         PrintErrorAndQuit("ERROR: Fasta format is wrong, two proteins should be included.");
     if (sequence[0].size() != sequence[1].size())
@@ -935,7 +936,7 @@ void read_user_alignment(vector<string>&sequence, const string &fname_lign,
     if (i_opt==3)
     {
         int aligned_resNum=0;
-        for (int i=0;i<sequence[0].size();i++)
+        for (int i=0;i<sequence[0].size();i++) 
             aligned_resNum+=(sequence[0][i]!='-' && sequence[1][i]!='-');
         if (aligned_resNum<3)
             PrintErrorAndQuit("ERROR! Superposition is undefined for <3 aligned residues.");
@@ -950,7 +951,7 @@ void read_user_alignment(vector<string>&sequence, const string &fname_lign,
  * This function should only be called by main function, as it will
  * terminate a program if wrong alignment is given */
 void file2chainlist(vector<string>&chain_list, const string &name,
-                    const string &dir_opt, const string &suffix_opt)
+    const string &dir_opt, const string &suffix_opt)
 {
     ifstream fp(name.c_str());
     if (! fp.is_open())
@@ -980,7 +981,7 @@ u    - u(i,j) is   rotation  matrix for best superposition  (output)
 t    - t(i)   is translation vector for best superposition  (output)
 **************************************************************************/
 bool Kabsch(double **x, double **y, int n, int mode, double *rms,
-            double t[3], double u[3][3])
+    double t[3], double u[3][3])
 {
     int i, j, m, m1, l, k;
     double e0, rms1, d, h, g;
@@ -1058,7 +1059,7 @@ bool Kabsch(double **x, double **y, int n, int mode, double *rms,
     if (mode == 2 || mode == 0)
         for (int mm = 0; mm < n; mm++)
             for (int nn = 0; nn < 3; nn++)
-                e0 += (x[mm][nn] - xc[nn]) * (x[mm][nn] - xc[nn]) +
+                e0 += (x[mm][nn] - xc[nn]) * (x[mm][nn] - xc[nn]) + 
                       (y[mm][nn] - yc[nn]) * (y[mm][nn] - yc[nn]);
     for (j = 0; j < 3; j++)
     {
@@ -1212,7 +1213,7 @@ bool Kabsch(double **x, double **y, int n, int mode, double *rms,
                 d = 0.0;
                 for (i = 0; i<3; i++)
                 {
-                    b[i][l] = r[i][0] * a[0][l] +
+                    b[i][l] = r[i][0] * a[0][l] + 
                               r[i][1] * a[1][l] + r[i][2] * a[2][l];
                     d = d + b[i][l] * b[i][l];
                 }
@@ -1263,22 +1264,22 @@ bool Kabsch(double **x, double **y, int n, int mode, double *rms,
                 //compute u
                 for (i = 0; i<3; i++)
                     for (j = 0; j<3; j++)
-                        u[i][j] = b[i][0] * a[j][0] +
+                        u[i][j] = b[i][0] * a[j][0] + 
                                   b[i][1] * a[j][1] + b[i][2] * a[j][2];
             }
 
             //compute t
             for (i = 0; i<3; i++)
-                t[i] = ((yc[i] - u[i][0] * xc[0]) - u[i][1] * xc[1]) -
-                       u[i][2] * xc[2];
+                t[i] = ((yc[i] - u[i][0] * xc[0]) - u[i][1] * xc[1]) - 
+                                                    u[i][2] * xc[2];
         }//if(mode!=0 && a_failed!=1)
     }//spur>0
     else //just compute t and errors
     {
         //compute t
         for (i = 0; i<3; i++)
-            t[i] = ((yc[i] - u[i][0] * xc[0]) - u[i][1] * xc[1]) -
-                   u[i][2] * xc[2];
+            t[i] = ((yc[i] - u[i][0] * xc[0]) - u[i][1] * xc[1]) - 
+                                                u[i][2] * xc[2];
     }//else spur>0 
 
     //compute rms
@@ -1318,7 +1319,7 @@ bool Kabsch(double **x, double **y, int n, int mode, double *rms,
  * Output: j2i[1:len2] \in {1:len1} U {-1}
  * path[0:len1, 0:len2]=1,2,3, from diagonal, horizontal, vertical */
 void NWDP_TM(double **score, bool **path, double **val,
-             int len1, int len2, double gap_open, int j2i[])
+    int len1, int len2, double gap_open, int j2i[])
 {
 
     int i, j;
@@ -1338,7 +1339,7 @@ void NWDP_TM(double **score, bool **path, double **val,
         //val[0][j]=j*gap_open;
         path[0][j]=false; //not from diagonal
         j2i[j]=-1;    //all are not aligned, only use j2i[1:len2]
-    }
+    }      
 
 
     //decide matrix and path
@@ -1362,7 +1363,7 @@ void NWDP_TM(double **score, bool **path, double **val,
                 path[i][j]=true; //from diagonal
                 val[i][j]=d;
             }
-            else
+            else 
             {
                 path[i][j]=false; //from horizontal
                 if(v>=h) val[i][j]=v;
@@ -1382,7 +1383,7 @@ void NWDP_TM(double **score, bool **path, double **val,
             i--;
             j--;
         }
-        else
+        else 
         {
             h=val[i-1][j];
             if(path[i-1][j]) h +=gap_open;
@@ -1400,8 +1401,8 @@ void NWDP_TM(double **score, bool **path, double **val,
  * Output: j2i[1:len2] \in {1:len1} U {-1}
  * path[0:len1, 0:len2]=1,2,3, from diagonal, horizontal, vertical */
 void NWDP_TM(bool **path, double **val, double **x, double **y,
-             int len1, int len2, double t[3], double u[3][3],
-             double d02, double gap_open, int j2i[])
+    int len1, int len2, double t[3], double u[3][3],
+    double d02, double gap_open, int j2i[])
 {
     int i, j;
     double h, v, d;
@@ -1421,7 +1422,7 @@ void NWDP_TM(bool **path, double **val, double **x, double **y,
         //val[0][j]=j*gap_open;
         path[0][j]=false; //not from diagonal
         j2i[j]=-1;    //all are not aligned, only use j2i[1:len2]
-    }
+    }      
     double xx[3], dij;
 
 
@@ -1431,7 +1432,7 @@ void NWDP_TM(bool **path, double **val, double **x, double **y,
         transform(t, u, &x[i-1][0], xx);
         for(j=1; j<=len2; j++)
         {
-            dij=dist(xx, &y[j-1][0]);
+            dij=dist(xx, &y[j-1][0]);    
             d=val[i-1][j-1] +  1.0/(1+dij/d02);
 
             //symbol insertion in horizontal (= a gap in vertical)
@@ -1448,7 +1449,7 @@ void NWDP_TM(bool **path, double **val, double **x, double **y,
                 path[i][j]=true; //from diagonal
                 val[i][j]=d;
             }
-            else
+            else 
             {
                 path[i][j]=false; //from horizontal
                 if(v>=h) val[i][j]=v;
@@ -1468,7 +1469,7 @@ void NWDP_TM(bool **path, double **val, double **x, double **y,
             i--;
             j--;
         }
-        else
+        else 
         {
             h=val[i-1][j];
             if(path[i-1][j]) h +=gap_open;
@@ -1487,7 +1488,7 @@ void NWDP_TM(bool **path, double **val, double **x, double **y,
  * Output: j2i[1:len2] \in {1:len1} U {-1}
  * path[0:len1, 0:len2]=1,2,3, from diagonal, horizontal, vertical */
 void NWDP_SE(bool **path, double **val, double **x, double **y,
-             int len1, int len2, double d02, double gap_open, int j2i[])
+    int len1, int len2, double d02, double gap_open, int j2i[])
 {
     int i, j;
     double h, v, d;
@@ -1503,7 +1504,7 @@ void NWDP_SE(bool **path, double **val, double **x, double **y,
         val[0][j]=0;
         path[0][j]=false; //not from diagonal
         j2i[j]=-1;    //all are not aligned, only use j2i[1:len2]
-    }
+    }      
     double dij;
 
     //decide matrix and path
@@ -1511,7 +1512,7 @@ void NWDP_SE(bool **path, double **val, double **x, double **y,
     {
         for(j=1; j<=len2; j++)
         {
-            dij=dist(&x[i-1][0], &y[j-1][0]);
+            dij=dist(&x[i-1][0], &y[j-1][0]);    
             d=val[i-1][j-1] +  1.0/(1+dij/d02);
 
             //symbol insertion in horizontal (= a gap in vertical)
@@ -1528,7 +1529,7 @@ void NWDP_SE(bool **path, double **val, double **x, double **y,
                 path[i][j]=true; //from diagonal
                 val[i][j]=d;
             }
-            else
+            else 
             {
                 path[i][j]=false; //from horizontal
                 if(v>=h) val[i][j]=v;
@@ -1548,7 +1549,7 @@ void NWDP_SE(bool **path, double **val, double **x, double **y,
             i--;
             j--;
         }
-        else
+        else 
         {
             h=val[i-1][j];
             if(path[i-1][j]) h +=gap_open;
@@ -1567,7 +1568,7 @@ void NWDP_SE(bool **path, double **val, double **x, double **y,
  * Output: j2i[1:len2] \in {1:len1} U {-1}
  * path[0:len1, 0:len2]=1,2,3, from diagonal, horizontal, vertical */
 void NWDP_TM(bool **path, double **val, const char *secx, const char *secy,
-             const int len1, const int len2, const double gap_open, int j2i[])
+    const int len1, const int len2, const double gap_open, int j2i[])
 {
 
     int i, j;
@@ -1587,7 +1588,7 @@ void NWDP_TM(bool **path, double **val, const char *secx, const char *secy,
         //val[0][j]=j*gap_open;
         path[0][j]=false; //not from diagonal
         j2i[j]=-1;    //all are not aligned, only use j2i[1:len2]
-    }
+    }      
 
     //decide matrix and path
     for(i=1; i<=len1; i++)
@@ -1609,7 +1610,7 @@ void NWDP_TM(bool **path, double **val, const char *secx, const char *secy,
                 path[i][j]=true; //from diagonal
                 val[i][j]=d;
             }
-            else
+            else 
             {
                 path[i][j]=false; //from horizontal
                 if(v>=h) val[i][j]=v;
@@ -1629,7 +1630,7 @@ void NWDP_TM(bool **path, double **val, const char *secx, const char *secy,
             i--;
             j--;
         }
-        else
+        else 
         {
             h=val[i-1][j];
             if(path[i-1][j]) h +=gap_open;
@@ -1644,13 +1645,13 @@ void NWDP_TM(bool **path, double **val, const char *secx, const char *secy,
 }
 
 void parameter_set4search(const int xlen, const int ylen,
-                          double &D0_MIN, double &Lnorm,
-                          double &score_d8, double &d0, double &d0_search, double &dcu0)
+    double &D0_MIN, double &Lnorm,
+    double &score_d8, double &d0, double &d0_search, double &dcu0)
 {
     //parameter initilization for searching: D0_MIN, Lnorm, d0, d0_search, score_d8
-    D0_MIN=0.5;
+    D0_MIN=0.5; 
     dcu0=4.25;                       //update 3.85-->4.25
-
+ 
     Lnorm=getmin(xlen, ylen);        //normaliz TMscore by this in searching
     if (Lnorm<=19)                    //update 15-->19
         d0=0.168;                   //update 0.5-->0.168
@@ -1666,10 +1667,10 @@ void parameter_set4search(const int xlen, const int ylen,
 }
 
 void parameter_set4final_C3prime(const double len, double &D0_MIN,
-                                 double &Lnorm, double &d0, double &d0_search)
+    double &Lnorm, double &d0, double &d0_search)
 {
-    D0_MIN=0.3;
-
+    D0_MIN=0.3; 
+ 
     Lnorm=len;            //normaliz TMscore by this in searching
     if(Lnorm<=11) d0=0.3;
     else if(Lnorm>11&&Lnorm<=15) d0=0.4;
@@ -1684,46 +1685,46 @@ void parameter_set4final_C3prime(const double len, double &D0_MIN,
 }
 
 void parameter_set4final(const double len, double &D0_MIN, double &Lnorm,
-                         double &d0, double &d0_search, const int mol_type)
+    double &d0, double &d0_search, const int mol_type)
 {
     if (mol_type>0) // RNA
     {
         parameter_set4final_C3prime(len, D0_MIN, Lnorm,
-                                    d0, d0_search);
+            d0, d0_search);
         return;
     }
-    D0_MIN=0.5;
-
+    D0_MIN=0.5; 
+ 
     Lnorm=len;            //normaliz TMscore by this in searching
-    if (Lnorm<=21) d0=0.5;
+    if (Lnorm<=21) d0=0.5;          
     else d0=(1.24*pow((Lnorm*1.0-15), 1.0/3)-1.8);
-    if (d0<D0_MIN) d0=D0_MIN;
+    if (d0<D0_MIN) d0=D0_MIN;   
     d0_search=d0;
     if (d0_search>8)   d0_search=8;
     if (d0_search<4.5) d0_search=4.5;
 }
 
 void parameter_set4scale(const int len, const double d_s, double &Lnorm,
-                         double &d0, double &d0_search)
+    double &d0, double &d0_search)
 {
-    d0=d_s;
+    d0=d_s;          
     Lnorm=len;            //normaliz TMscore by this in searching
     d0_search=d0;
     if (d0_search>8)   d0_search=8;
-    if (d0_search<4.5) d0_search=4.5;
+    if (d0_search<4.5) d0_search=4.5;  
 }
 
 //     1, collect those residues with dis<d;
 //     2, calculate TMscore
 int score_fun8( double **xa, double **ya, int n_ali, double d, int i_ali[],
-                double *score1, int score_sum_method, const double Lnorm,
-                const double score_d8, const double d0)
+    double *score1, int score_sum_method, const double Lnorm, 
+    const double score_d8, const double d0)
 {
     double score_sum=0, di;
     double d_tmp=d*d;
     double d02=d0*d0;
     double score_d8_cut = score_d8*score_d8;
-
+    
     int i, n_cut, inc=0;
 
     while(1)
@@ -1739,7 +1740,7 @@ int score_fun8( double **xa, double **ya, int n_ali, double d, int i_ali[],
                 n_cut++;
             }
             if(score_sum_method==8)
-            {
+            {                
                 if(di<=score_d8_cut) score_sum += 1/(1+di/d02);
             }
             else score_sum += 1/(1+di/d02);
@@ -1752,15 +1753,15 @@ int score_fun8( double **xa, double **ya, int n_ali, double d, int i_ali[],
             d_tmp = dinc * dinc;
         }
         else break;
-    }
+    }  
 
     *score1=score_sum/Lnorm;
     return n_cut;
 }
 
 int score_fun8_standard(double **xa, double **ya, int n_ali, double d,
-                        int i_ali[], double *score1, int score_sum_method,
-                        double score_d8, double d0)
+    int i_ali[], double *score1, int score_sum_method,
+    double score_d8, double d0)
 {
     double score_sum = 0, di;
     double d_tmp = d*d;
@@ -1804,27 +1805,27 @@ int score_fun8_standard(double **xa, double **ya, int n_ali, double d,
 }
 
 double TMscore8_search(double **r1, double **r2, double **xtm, double **ytm,
-                       double **xt, int Lali, double t0[3], double u0[3][3], int simplify_step,
-                       int score_sum_method, double *Rcomm, double local_d0_search, double Lnorm,
-                       double score_d8, double d0)
+    double **xt, int Lali, double t0[3], double u0[3][3], int simplify_step,
+    int score_sum_method, double *Rcomm, double local_d0_search, double Lnorm,
+    double score_d8, double d0)
 {
     int i, m;
-    double score_max, score, rmsd;
-    const int kmax=Lali;
+    double score_max, score, rmsd;    
+    const int kmax=Lali;    
     int k_ali[kmax], ka, k;
     double t[3];
     double u[3][3];
     double d;
-
+    
 
     //iterative parameters
     int n_it=20;            //maximum number of iterations
     int n_init_max=6; //maximum number of different fragment length 
     int L_ini[n_init_max];  //fragment lengths, Lali, Lali/2, Lali/4 ... 4   
     int L_ini_min=4;
-    if(Lali<L_ini_min) L_ini_min=Lali;
+    if(Lali<L_ini_min) L_ini_min=Lali;   
 
-    int n_init=0, i_init;
+    int n_init=0, i_init;      
     for(i=0; i<n_init_max-1; i++)
     {
         n_init++;
@@ -1840,19 +1841,19 @@ double TMscore8_search(double **r1, double **r2, double **xtm, double **ytm,
         n_init++;
         L_ini[i]=L_ini_min;
     }
-
+    
     score_max=-1;
     //find the maximum score starting from local structures superposition
     int i_ali[kmax], n_cut;
     int L_frag; //fragment length
     int iL_max; //maximum starting postion for the fragment
-
+    
     for(i_init=0; i_init<n_init; i_init++)
     {
         L_frag=L_ini[i_init];
         iL_max=Lali-L_frag;
-
-        i=0;
+      
+        i=0;   
         while(1)
         {
             //extract the fragment starting from position i 
@@ -1860,32 +1861,32 @@ double TMscore8_search(double **r1, double **r2, double **xtm, double **ytm,
             for(k=0; k<L_frag; k++)
             {
                 int kk=k+i;
-                r1[k][0]=xtm[kk][0];
-                r1[k][1]=xtm[kk][1];
-                r1[k][2]=xtm[kk][2];
-
-                r2[k][0]=ytm[kk][0];
-                r2[k][1]=ytm[kk][1];
+                r1[k][0]=xtm[kk][0];  
+                r1[k][1]=xtm[kk][1]; 
+                r1[k][2]=xtm[kk][2];   
+                
+                r2[k][0]=ytm[kk][0];  
+                r2[k][1]=ytm[kk][1]; 
                 r2[k][2]=ytm[kk][2];
-
+                
                 k_ali[ka]=kk;
                 ka++;
             }
-
+            
             //extract rotation matrix based on the fragment
             Kabsch(r1, r2, L_frag, 1, &rmsd, t, u);
             if (simplify_step != 1)
                 *Rcomm = 0;
             do_rotation(xtm, xt, Lali, t, u);
-
+            
             //get subsegment of this fragment
             d = local_d0_search - 1;
-            n_cut=score_fun8(xt, ytm, Lali, d, i_ali, &score,
-                             score_sum_method, Lnorm, score_d8, d0);
+            n_cut=score_fun8(xt, ytm, Lali, d, i_ali, &score, 
+                score_sum_method, Lnorm, score_d8, d0);
             if(score>score_max)
             {
                 score_max=score;
-
+                
                 //save the rotation matrix
                 for(k=0; k<3; k++)
                 {
@@ -1895,31 +1896,31 @@ double TMscore8_search(double **r1, double **r2, double **xtm, double **ytm,
                     u0[k][2]=u[k][2];
                 }
             }
-
+            
             //try to extend the alignment iteratively            
             d = local_d0_search + 1;
-            for(int it=0; it<n_it; it++)
+            for(int it=0; it<n_it; it++)            
             {
                 ka=0;
                 for(k=0; k<n_cut; k++)
                 {
                     m=i_ali[k];
-                    r1[k][0]=xtm[m][0];
-                    r1[k][1]=xtm[m][1];
+                    r1[k][0]=xtm[m][0];  
+                    r1[k][1]=xtm[m][1]; 
                     r1[k][2]=xtm[m][2];
-
-                    r2[k][0]=ytm[m][0];
-                    r2[k][1]=ytm[m][1];
+                    
+                    r2[k][0]=ytm[m][0];  
+                    r2[k][1]=ytm[m][1]; 
                     r2[k][2]=ytm[m][2];
-
+                    
                     k_ali[ka]=m;
                     ka++;
-                }
+                } 
                 //extract rotation matrix based on the fragment                
                 Kabsch(r1, r2, n_cut, 1, &rmsd, t, u);
                 do_rotation(xtm, xt, Lali, t, u);
-                n_cut=score_fun8(xt, ytm, Lali, d, i_ali, &score,
-                                 score_sum_method, Lnorm, score_d8, d0);
+                n_cut=score_fun8(xt, ytm, Lali, d, i_ali, &score, 
+                    score_sum_method, Lnorm, score_d8, d0);
                 if(score>score_max)
                 {
                     score_max=score;
@@ -1931,18 +1932,18 @@ double TMscore8_search(double **r1, double **r2, double **xtm, double **ytm,
                         u0[k][0]=u[k][0];
                         u0[k][1]=u[k][1];
                         u0[k][2]=u[k][2];
-                    }
+                    }                     
                 }
-
+                
                 //check if it converges            
                 if(n_cut==ka)
-                {
+                {                
                     for(k=0; k<n_cut; k++)
                     {
                         if(i_ali[k]!=k_ali[k]) break;
                     }
                     if(k==n_cut) break;
-                }
+                }                                                               
             } //for iteration            
 
             if(i<iL_max)
@@ -1959,9 +1960,9 @@ double TMscore8_search(double **r1, double **r2, double **xtm, double **ytm,
 
 
 double TMscore8_search_standard( double **r1, double **r2,
-                                 double **xtm, double **ytm, double **xt, int Lali,
-                                 double t0[3], double u0[3][3], int simplify_step, int score_sum_method,
-                                 double *Rcomm, double local_d0_search, double score_d8, double d0)
+    double **xtm, double **ytm, double **xt, int Lali,
+    double t0[3], double u0[3][3], int simplify_step, int score_sum_method,
+    double *Rcomm, double local_d0_search, double score_d8, double d0)
 {
     int i, m;
     double score_max, score, rmsd;
@@ -2034,7 +2035,7 @@ double TMscore8_search_standard( double **r1, double **r2,
             //get subsegment of this fragment
             d = local_d0_search - 1;
             n_cut = score_fun8_standard(xt, ytm, Lali, d, i_ali, &score,
-                                        score_sum_method, score_d8, d0);
+                score_sum_method, score_d8, d0);
 
             if (score>score_max)
             {
@@ -2073,7 +2074,7 @@ double TMscore8_search_standard( double **r1, double **r2,
                 Kabsch(r1, r2, n_cut, 1, &rmsd, t, u);
                 do_rotation(xtm, xt, Lali, t, u);
                 n_cut = score_fun8_standard(xt, ytm, Lali, d, i_ali, &score,
-                                            score_sum_method, score_d8, d0);
+                    score_sum_method, score_d8, d0);
                 if (score>score_max)
                 {
                     score_max = score;
@@ -2119,18 +2120,18 @@ double TMscore8_search_standard( double **r1, double **r2,
 //                            8 for socre over the pairs with dist<score_d8
 // output:  the best rotaion matrix t, u that results in highest TMscore
 double detailed_search(double **r1, double **r2, double **xtm, double **ytm,
-                       double **xt, double **x, double **y, int xlen, int ylen,
-                       int invmap0[], double t[3], double u[3][3], int simplify_step,
-                       int score_sum_method, double local_d0_search, double Lnorm,
-                       double score_d8, double d0)
+    double **xt, double **x, double **y, int xlen, int ylen, 
+    int invmap0[], double t[3], double u[3][3], int simplify_step,
+    int score_sum_method, double local_d0_search, double Lnorm,
+    double score_d8, double d0)
 {
     //x is model, y is template, try to superpose onto y
-    int i, j, k;
+    int i, j, k;     
     double tmscore;
     double rmsd;
 
     k=0;
-    for(i=0; i<ylen; i++)
+    for(i=0; i<ylen; i++) 
     {
         j=invmap0[i];
         if(j>=0) //aligned
@@ -2138,7 +2139,7 @@ double detailed_search(double **r1, double **r2, double **xtm, double **ytm,
             xtm[k][0]=x[j][0];
             xtm[k][1]=x[j][1];
             xtm[k][2]=x[j][2];
-
+                
             ytm[k][0]=y[i][0];
             ytm[k][1]=y[i][1];
             ytm[k][2]=y[i][2];
@@ -2148,23 +2149,23 @@ double detailed_search(double **r1, double **r2, double **xtm, double **ytm,
 
     //detailed search 40-->1
     tmscore = TMscore8_search(r1, r2, xtm, ytm, xt, k, t, u, simplify_step,
-                              score_sum_method, &rmsd, local_d0_search, Lnorm, score_d8, d0);
+        score_sum_method, &rmsd, local_d0_search, Lnorm, score_d8, d0);
     return tmscore;
 }
 
 double detailed_search_standard( double **r1, double **r2,
-                                 double **xtm, double **ytm, double **xt, double **x, double **y,
-                                 int xlen, int ylen, int invmap0[], double t[3], double u[3][3],
-                                 int simplify_step, int score_sum_method, double local_d0_search,
-                                 const bool& bNormalize, double Lnorm, double score_d8, double d0)
+    double **xtm, double **ytm, double **xt, double **x, double **y,
+    int xlen, int ylen, int invmap0[], double t[3], double u[3][3],
+    int simplify_step, int score_sum_method, double local_d0_search,
+    const bool& bNormalize, double Lnorm, double score_d8, double d0)
 {
     //x is model, y is template, try to superpose onto y
-    int i, j, k;
+    int i, j, k;     
     double tmscore;
     double rmsd;
 
     k=0;
-    for(i=0; i<ylen; i++)
+    for(i=0; i<ylen; i++) 
     {
         j=invmap0[i];
         if(j>=0) //aligned
@@ -2172,7 +2173,7 @@ double detailed_search_standard( double **r1, double **r2,
             xtm[k][0]=x[j][0];
             xtm[k][1]=x[j][1];
             xtm[k][2]=x[j][2];
-
+                
             ytm[k][0]=y[i][0];
             ytm[k][1]=y[i][1];
             ytm[k][2]=y[i][2];
@@ -2182,7 +2183,7 @@ double detailed_search_standard( double **r1, double **r2,
 
     //detailed search 40-->1
     tmscore = TMscore8_search_standard( r1, r2, xtm, ytm, xt, k, t, u,
-                                        simplify_step, score_sum_method, &rmsd, local_d0_search, score_d8, d0);
+        simplify_step, score_sum_method, &rmsd, local_d0_search, score_d8, d0);
     if (bNormalize)// "-i", to use standard_TMscore, then bNormalize=true, else bNormalize=false; 
         tmscore = tmscore * k / Lnorm;
 
@@ -2191,8 +2192,8 @@ double detailed_search_standard( double **r1, double **r2,
 
 //compute the score quickly in three iterations
 double get_score_fast( double **r1, double **r2, double **xtm, double **ytm,
-                       double **x, double **y, int xlen, int ylen, int invmap[],
-                       double d0, double d0_search, double t[3], double u[3][3])
+    double **x, double **y, int xlen, int ylen, int invmap[],
+    double d0, double d0_search, double t[3], double u[3][3])
 {
     double rms, tmscore, tmscore1, tmscore2;
     int i, j, k;
@@ -2210,59 +2211,59 @@ double get_score_fast( double **r1, double **r2, double **xtm, double **ytm,
             r2[k][0]=y[j][0];
             r2[k][1]=y[j][1];
             r2[k][2]=y[j][2];
-
+            
             xtm[k][0]=x[i][0];
             xtm[k][1]=x[i][1];
             xtm[k][2]=x[i][2];
-
+            
             ytm[k][0]=y[j][0];
             ytm[k][1]=y[j][1];
-            ytm[k][2]=y[j][2];
-
+            ytm[k][2]=y[j][2];                  
+            
             k++;
         }
         else if(i!=-1) PrintErrorAndQuit("Wrong map!\n");
     }
     Kabsch(r1, r2, k, 1, &rms, t, u);
-
+    
     //evaluate score   
     double di;
     const int len=k;
-    double dis[len];
+    double dis[len];    
     double d00=d0_search;
     double d002=d00*d00;
     double d02=d0*d0;
-
+    
     int n_ali=k;
     double xrot[3];
     tmscore=0;
     for(k=0; k<n_ali; k++)
     {
-        transform(t, u, &xtm[k][0], xrot);
+        transform(t, u, &xtm[k][0], xrot);        
         di=dist(xrot, &ytm[k][0]);
         dis[k]=di;
         tmscore += 1/(1+di/d02);
     }
-
-
-
-    //second iteration
+    
+   
+   
+   //second iteration 
     double d002t=d002;
     while(1)
     {
         j=0;
         for(k=0; k<n_ali; k++)
-        {
+        {            
             if(dis[k]<=d002t)
             {
                 r1[j][0]=xtm[k][0];
                 r1[j][1]=xtm[k][1];
                 r1[j][2]=xtm[k][2];
-
+                
                 r2[j][0]=ytm[k][0];
                 r2[j][1]=ytm[k][1];
                 r2[j][2]=ytm[k][2];
-
+                
                 j++;
             }
         }
@@ -2270,37 +2271,37 @@ double get_score_fast( double **r1, double **r2, double **xtm, double **ytm,
         if(j<3 && n_ali>3) d002t += 0.5;
         else break;
     }
-
+    
     if(n_ali!=j)
     {
         Kabsch(r1, r2, j, 1, &rms, t, u);
         tmscore1=0;
         for(k=0; k<n_ali; k++)
         {
-            transform(t, u, &xtm[k][0], xrot);
+            transform(t, u, &xtm[k][0], xrot);        
             di=dist(xrot, &ytm[k][0]);
             dis[k]=di;
             tmscore1 += 1/(1+di/d02);
         }
-
+        
         //third iteration
         d002t=d002+1;
-
+       
         while(1)
         {
             j=0;
             for(k=0; k<n_ali; k++)
-            {
+            {            
                 if(dis[k]<=d002t)
                 {
                     r1[j][0]=xtm[k][0];
                     r1[j][1]=xtm[k][1];
                     r1[j][2]=xtm[k][2];
-
+                    
                     r2[j][0]=ytm[k][0];
                     r2[j][1]=ytm[k][1];
                     r2[j][2]=ytm[k][2];
-
+                                        
                     j++;
                 }
             }
@@ -2317,14 +2318,14 @@ double get_score_fast( double **r1, double **r2, double **xtm, double **ytm,
             transform(t, u, &xtm[k][0], xrot);
             di=dist(xrot, &ytm[k][0]);
             tmscore2 += 1/(1+di/d02);
-        }
+        }    
     }
     else
     {
         tmscore1=tmscore;
         tmscore2=tmscore;
     }
-
+    
     if(tmscore1>=tmscore) tmscore=tmscore1;
     if(tmscore2>=tmscore) tmscore=tmscore2;
     return tmscore; // no need to normalize this score because it will not be used for latter scoring
@@ -2338,17 +2339,17 @@ double get_score_fast( double **r1, double **r2, double **xtm, double **ytm,
 //the jth element in y is aligned to the ith element in x if i>=0 
 //the jth element in y is aligned to a gap in x if i==-1
 double get_initial(double **r1, double **r2, double **xtm, double **ytm,
-                   double **x, double **y, int xlen, int ylen, int *y2x,
-                   double d0, double d0_search, const bool fast_opt,
-                   double t[3], double u[3][3])
+    double **x, double **y, int xlen, int ylen, int *y2x,
+    double d0, double d0_search, const bool fast_opt,
+    double t[3], double u[3][3])
 {
     int min_len=getmin(xlen, ylen);
     if(min_len<3) PrintErrorAndQuit("Sequence is too short <3!\n");
-
+    
     int min_ali= min_len/2;              //minimum size of considered fragment 
-    if(min_ali<=5)  min_ali=5;
+    if(min_ali<=5)  min_ali=5;    
     int n1, n2;
-    n1 = -ylen+min_ali;
+    n1 = -ylen+min_ali; 
     n2 = xlen-min_ali;
 
     int i, j, k, k_best;
@@ -2364,18 +2365,18 @@ double get_initial(double **r1, double **r2, double **xtm, double **ytm,
             if(i>=0 && i<xlen) y2x[j]=i;
             else y2x[j]=-1;
         }
-
+        
         //evaluate the map quickly in three iterations
         //this is not real tmscore, it is used to evaluate the goodness of the initial alignment
         tmscore=get_score_fast(r1, r2, xtm, ytm,
-                               x, y, xlen, ylen, y2x, d0,d0_search, t, u);
+            x, y, xlen, ylen, y2x, d0,d0_search, t, u);
         if(tmscore>=tmscore_max)
         {
             tmscore_max=tmscore;
             k_best=k;
         }
     }
-
+    
     //extract the best map
     k=k_best;
     for(j=0; j<ylen; j++)
@@ -2383,7 +2384,7 @@ double get_initial(double **r1, double **r2, double **xtm, double **ytm,
         i=j+k;
         if(i>=0 && i<xlen) y2x[j]=i;
         else y2x[j]=-1;
-    }
+    }    
 
     return tmscore_max;
 }
@@ -2425,7 +2426,7 @@ void smooth(int *sec, int len)
 
     //smooth connect
     for (i=0; i<len-2; i++)
-    {
+    {        
         if (sec[i]==2 && sec[i+1]!=2 && sec[i+2]==2) sec[i+1]=2;
         else if(sec[i]==4 && sec[i+1]!=4 && sec[i+2]==4) sec[i+1]=4;
     }
@@ -2433,12 +2434,12 @@ void smooth(int *sec, int len)
 }
 
 char sec_str(double dis13, double dis14, double dis15,
-             double dis24, double dis25, double dis35)
+            double dis24, double dis25, double dis35)
 {
     char s='C';
-
+    
     double delta=2.1;
-    if (fabs(dis15-6.37)<delta && fabs(dis14-5.18)<delta &&
+    if (fabs(dis15-6.37)<delta && fabs(dis14-5.18)<delta && 
         fabs(dis25-5.18)<delta && fabs(dis13-5.45)<delta &&
         fabs(dis24-5.45)<delta && fabs(dis35-5.45)<delta)
     {
@@ -2467,14 +2468,14 @@ void make_sec(double **x, int len, char *sec)
     int j1, j2, j3, j4, j5;
     double d13, d14, d15, d24, d25, d35;
     for(int i=0; i<len; i++)
-    {
+    {     
         sec[i]='C';
         j1=i-2;
         j2=i-1;
         j3=i;
         j4=i+1;
-        j5=i+2;
-
+        j5=i+2;        
+        
         if(j1>=0 && j5<len)
         {
             d13=sqrt(dist(x[j1], x[j3]));
@@ -2483,9 +2484,9 @@ void make_sec(double **x, int len, char *sec)
             d24=sqrt(dist(x[j2], x[j4]));
             d25=sqrt(dist(x[j2], x[j5]));
             d35=sqrt(dist(x[j3], x[j5]));
-            sec[i]=sec_str(d13, d14, d15, d24, d25, d35);
-        }
-    }
+            sec[i]=sec_str(d13, d14, d15, d24, d25, d35);            
+        }    
+    } 
     sec[len]=0;
 }
 
@@ -2496,7 +2497,7 @@ void make_sec(double **x, int len, char *sec)
 //the jth element in y is aligned to the ith element in x if i>=0 
 //the jth element in y is aligned to a gap in x if i==-1
 void get_initial_ss(bool **path, double **val,
-                    const char *secx, const char *secy, int xlen, int ylen, int *y2x)
+    const char *secx, const char *secy, int xlen, int ylen, int *y2x)
 {
     double gap_open=-1.0;
     NWDP_TM(path, val, secx, secy, xlen, ylen, gap_open, y2x);
@@ -2511,9 +2512,9 @@ void get_initial_ss(bool **path, double **val,
 //the jth element in y is aligned to the ith element in x if i>=0 
 //the jth element in y is aligned to a gap in x if i==-1
 bool get_initial5( double **r1, double **r2, double **xtm, double **ytm,
-                   bool **path, double **val,
-                   double **x, double **y, int xlen, int ylen, int *y2x,
-                   double d0, double d0_search, const bool fast_opt, const double D0_MIN)
+    bool **path, double **val,
+    double **x, double **y, int xlen, int ylen, int *y2x,
+    double d0, double d0_search, const bool fast_opt, const double D0_MIN)
 {
     double GL, rmsd;
     double t[3];
@@ -2592,9 +2593,9 @@ bool get_initial5( double **r1, double **r2, double **xtm, double **ytm,
 
                 double gap_open = 0.0;
                 NWDP_TM(path, val, x, y, xlen, ylen,
-                        t, u, d02, gap_open, invmap);
+                    t, u, d02, gap_open, invmap);
                 GL = get_score_fast(r1, r2, xtm, ytm, x, y, xlen, ylen,
-                                    invmap, d0, d0_search, t, u);
+                    invmap, d0, d0_search, t, u);
                 if (GL>GLmax)
                 {
                     GLmax = GL;
@@ -2610,8 +2611,8 @@ bool get_initial5( double **r1, double **r2, double **xtm, double **ytm,
 }
 
 void score_matrix_rmsd_sec( double **r1, double **r2, double **score,
-                            const char *secx, const char *secy, double **x, double **y,
-                            int xlen, int ylen, int *y2x, const double D0_MIN, double d0)
+    const char *secx, const char *secy, double **x, double **y,
+    int xlen, int ylen, int *y2x, const double D0_MIN, double d0)
 {
     double t[3], u[3][3];
     double rmsd, dij;
@@ -2626,26 +2627,26 @@ void score_matrix_rmsd_sec( double **r1, double **r2, double **score,
         i=y2x[j];
         if(i>=0)
         {
-            r1[k][0]=x[i][0];
-            r1[k][1]=x[i][1];
-            r1[k][2]=x[i][2];
-
-            r2[k][0]=y[j][0];
-            r2[k][1]=y[j][1];
+            r1[k][0]=x[i][0];  
+            r1[k][1]=x[i][1]; 
+            r1[k][2]=x[i][2];   
+            
+            r2[k][0]=y[j][0];  
+            r2[k][1]=y[j][1]; 
             r2[k][2]=y[j][2];
-
+            
             k++;
         }
     }
     Kabsch(r1, r2, k, 1, &rmsd, t, u);
 
-
+    
     for(int ii=0; ii<xlen; ii++)
-    {
+    {        
         transform(t, u, &x[ii][0], xx);
         for(int jj=0; jj<ylen; jj++)
         {
-            dij=dist(xx, &y[jj][0]);
+            dij=dist(xx, &y[jj][0]); 
             if (secx[ii]==secy[jj])
                 score[ii+1][jj+1] = 1.0/(1+dij/d02) + 0.5;
             else
@@ -2662,20 +2663,20 @@ void score_matrix_rmsd_sec( double **r1, double **r2, double **score,
 //the jth element in y is aligned to the ith element in x if i>=0 
 //the jth element in y is aligned to a gap in x if i==-1
 void get_initial_ssplus(double **r1, double **r2, double **score, bool **path,
-                        double **val, const char *secx, const char *secy, double **x, double **y,
-                        int xlen, int ylen, int *y2x0, int *y2x, const double D0_MIN, double d0)
+    double **val, const char *secx, const char *secy, double **x, double **y,
+    int xlen, int ylen, int *y2x0, int *y2x, const double D0_MIN, double d0)
 {
     //create score matrix for DP
     score_matrix_rmsd_sec(r1, r2, score, secx, secy, x, y, xlen, ylen,
-                          y2x0, D0_MIN,d0);
-
+        y2x0, D0_MIN,d0);
+    
     double gap_open=-1.0;
     NWDP_TM(score, path, val, xlen, ylen, gap_open, y2x);
 }
 
 
 void find_max_frag(double **x, int len, int *start_max,
-                   int *end_max, double dcu0, const bool fast_opt)
+    int *end_max, double dcu0, const bool fast_opt)
 {
     int r_min, fra_min=4;           //minimum fragment for search
     if (fast_opt) fra_min=8;
@@ -2684,14 +2685,14 @@ void find_max_frag(double **x, int len, int *start_max,
 
     r_min= (int) (len*1.0/3.0); //minimum fragment, in case too small protein
     if(r_min > fra_min) r_min=fra_min;
-
+    
     int inc=0;
     double dcu0_cut=dcu0*dcu0;;
     double dcu_cut=dcu0_cut;
 
     while(Lfr_max < r_min)
-    {
-        Lfr_max=0;
+    {        
+        Lfr_max=0;            
         int j=1;    //number of residues at nf-fragment
         start=0;
         for(int i=1; i<len; i++)
@@ -2702,29 +2703,29 @@ void find_max_frag(double **x, int len, int *start_max,
 
                 if(i==(len-1))
                 {
-                    if(j > Lfr_max)
+                    if(j > Lfr_max) 
                     {
                         Lfr_max=j;
                         *start_max=start;
-                        *end_max=i;
+                        *end_max=i;                        
                     }
                     j=1;
                 }
             }
             else
             {
-                if(j>Lfr_max)
+                if(j>Lfr_max) 
                 {
                     Lfr_max=j;
                     *start_max=start;
-                    *end_max=i-1;
+                    *end_max=i-1;                                        
                 }
 
                 j=1;
                 start=i;
             }
         }// for i;
-
+        
         if(Lfr_max < r_min)
         {
             inc++;
@@ -2741,9 +2742,9 @@ void find_max_frag(double **x, int len, int *start_max,
 //the jth element in y is aligned to the ith element in x if i>=0 
 //the jth element in y is aligned to a gap in x if i==-1
 double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
-                       double **x, double **y, int xlen, int ylen,
-                       int *y2x, double d0, double d0_search,
-                       double dcu0, const bool fast_opt, double t[3], double u[3][3])
+    double **x, double **y, int xlen, int ylen, 
+    int *y2x, double d0, double d0_search,
+    double dcu0, const bool fast_opt, double t[3], double u[3][3])
 {
     int fra_min=4;           //minimum fragment for search
     if (fast_opt) fra_min=8;
@@ -2767,11 +2768,11 @@ double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
     //if L1=Lfr1 and L2=Lfr2 (normal proteins), it will be the same as initial1
 
     if(Lx<Ly || (Lx==Ly && xlen<ylen))
-    {
+    {        
         for(int i=0; i<L_fr; i++) ifr[i]=xstart+i;
     }
     else if(Lx>Ly || (Lx==Ly && xlen>ylen))
-    {
+    {        
         for(int i=0; i<L_fr; i++) ifr[i]=ystart+i;
     }
     else // solve asymetric for 1x5gA vs 2q7nA5
@@ -2801,10 +2802,10 @@ double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
         }
 
         int L1=L_fr;
-        min_len=getmin(L1, ylen);
+        min_len=getmin(L1, ylen);    
         min_ali= (int) (min_len/2.5); //minimum size of considered fragment 
-        if(min_ali<=fra_min1)  min_ali=fra_min1;
-        n1 = -ylen+min_ali;
+        if(min_ali<=fra_min1)  min_ali=fra_min1;    
+        n1 = -ylen+min_ali; 
         n2 = L1-min_ali;
 
         for(k=n1; k<=n2; k+=(fast_opt)?3:1)
@@ -2819,7 +2820,7 @@ double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
 
             //evaluate the map quickly in three iterations
             tmscore=get_score_fast(r1, r2, xtm, ytm, x, y, xlen, ylen, y2x_,
-                                   d0, d0_search, t, u);
+                d0, d0_search, t, u);
 
             if(tmscore>=tmscore_max)
             {
@@ -2847,10 +2848,10 @@ double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
         }
 
         int L2=L_fr;
-        min_len=getmin(xlen, L2);
+        min_len=getmin(xlen, L2);    
         min_ali= (int) (min_len/2.5); //minimum size of considered fragment 
-        if(min_ali<=fra_min1)  min_ali=fra_min1;
-        n1 = -L2+min_ali;
+        if(min_ali<=fra_min1)  min_ali=fra_min1;    
+        n1 = -L2+min_ali; 
         n2 = xlen-min_ali;
 
         for(k=n1; k<=n2; k++)
@@ -2863,10 +2864,10 @@ double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
                 i=j+k;
                 if(i>=0 && i<xlen) y2x_[ifr[j]]=i;
             }
-
+        
             //evaluate the map quickly in three iterations
             tmscore=get_score_fast(r1, r2, xtm, ytm,
-                                   x, y, xlen, ylen, y2x_, d0,d0_search, t, u);
+                x, y, xlen, ylen, y2x_, d0,d0_search, t, u);
             if(tmscore>=tmscore_max)
             {
                 tmscore_max=tmscore;
@@ -2879,7 +2880,7 @@ double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
         return tmscore_max;
     }
 
-
+    
     int L0=getmin(xlen, ylen); //non-redundant to get_initial1
     if(L_fr==L0)
     {
@@ -2902,11 +2903,11 @@ double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
     if(Lx<Ly || (Lx==Ly && xlen<=ylen))
     {
         int L1=L_fr;
-        int min_len=getmin(L1, ylen);
+        int min_len=getmin(L1, ylen);    
         int min_ali= (int) (min_len/2.5);              //minimum size of considered fragment 
-        if(min_ali<=fra_min1)  min_ali=fra_min1;
+        if(min_ali<=fra_min1)  min_ali=fra_min1;    
         int n1, n2;
-        n1 = -ylen+min_ali;
+        n1 = -ylen+min_ali; 
         n2 = L1-min_ali;
 
         int i, j, k;
@@ -2922,7 +2923,7 @@ double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
 
             //evaluate the map quickly in three iterations
             tmscore=get_score_fast(r1, r2, xtm, ytm, x, y, xlen, ylen, y2x_,
-                                   d0, d0_search, t, u);
+                d0, d0_search, t, u);
 
             if(tmscore>=tmscore_max)
             {
@@ -2934,14 +2935,14 @@ double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
     else
     {
         int L2=L_fr;
-        int min_len=getmin(xlen, L2);
+        int min_len=getmin(xlen, L2);    
         int min_ali= (int) (min_len/2.5);              //minimum size of considered fragment 
-        if(min_ali<=fra_min1)  min_ali=fra_min1;
+        if(min_ali<=fra_min1)  min_ali=fra_min1;    
         int n1, n2;
-        n1 = -L2+min_ali;
+        n1 = -L2+min_ali; 
         n2 = xlen-min_ali;
 
-        int i, j, k;
+        int i, j, k;    
 
         for(k=n1; k<=n2; k++)
         {
@@ -2953,17 +2954,17 @@ double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
                 i=j+k;
                 if(i>=0 && i<xlen) y2x_[ifr[j]]=i;
             }
-
+        
             //evaluate the map quickly in three iterations
             tmscore=get_score_fast(r1, r2, xtm, ytm,
-                                   x, y, xlen, ylen, y2x_, d0,d0_search, t, u);
+                x, y, xlen, ylen, y2x_, d0,d0_search, t, u);
             if(tmscore>=tmscore_max)
             {
                 tmscore_max=tmscore;
                 for(j=0; j<ylen; j++) y2x[j]=y2x_[j];
             }
         }
-    }
+    }    
 
 
     delete [] ifr;
@@ -2976,17 +2977,17 @@ double get_initial_fgt(double **r1, double **r2, double **xtm, double **ytm,
 //       vectors x and y, d0
 //output: best alignment that maximizes the TMscore, will be stored in invmap
 double DP_iter(double **r1, double **r2, double **xtm, double **ytm,
-               double **xt, bool **path, double **val, double **x, double **y,
-               int xlen, int ylen, double t[3], double u[3][3], int invmap0[],
-               int g1, int g2, int iteration_max, double local_d0_search,
-               double D0_MIN, double Lnorm, double d0, double score_d8)
+    double **xt, bool **path, double **val, double **x, double **y,
+    int xlen, int ylen, double t[3], double u[3][3], int invmap0[],
+    int g1, int g2, int iteration_max, double local_d0_search,
+    double D0_MIN, double Lnorm, double d0, double score_d8)
 {
     double gap_open[2]={-0.6, 0};
-    double rmsd;
+    double rmsd; 
     int *invmap=new int[ylen+1];
-
+    
     int iteration, i, j, k;
-    double tmscore, tmscore_max, tmscore_old=0;
+    double tmscore, tmscore_max, tmscore_old=0;    
     int score_sum_method=8, simplify_step=40;
     tmscore_max=-1;
 
@@ -2995,12 +2996,12 @@ double DP_iter(double **r1, double **r2, double **xtm, double **ytm,
     for(int g=g1; g<g2; g++)
     {
         for(iteration=0; iteration<iteration_max; iteration++)
-        {
+        {           
             NWDP_TM(path, val, x, y, xlen, ylen,
-                    t, u, d02, gap_open[g], invmap);
-
+                t, u, d02, gap_open[g], invmap);
+            
             k=0;
-            for(j=0; j<ylen; j++)
+            for(j=0; j<ylen; j++) 
             {
                 i=invmap[j];
 
@@ -3009,7 +3010,7 @@ double DP_iter(double **r1, double **r2, double **xtm, double **ytm,
                     xtm[k][0]=x[i][0];
                     xtm[k][1]=x[i][1];
                     xtm[k][2]=x[i][2];
-
+                    
                     ytm[k][0]=y[j][0];
                     ytm[k][1]=y[j][1];
                     ytm[k][2]=y[j][2];
@@ -3018,39 +3019,39 @@ double DP_iter(double **r1, double **r2, double **xtm, double **ytm,
             }
 
             tmscore = TMscore8_search(r1, r2, xtm, ytm, xt, k, t, u,
-                                      simplify_step, score_sum_method, &rmsd, local_d0_search,
-                                      Lnorm, score_d8, d0);
+                simplify_step, score_sum_method, &rmsd, local_d0_search,
+                Lnorm, score_d8, d0);
 
-
+           
             if(tmscore>tmscore_max)
             {
                 tmscore_max=tmscore;
                 for(i=0; i<ylen; i++) invmap0[i]=invmap[i];
             }
-
+    
             if(iteration>0)
             {
-                if(fabs(tmscore_old-tmscore)<0.000001) break;
+                if(fabs(tmscore_old-tmscore)<0.000001) break;       
             }
             tmscore_old=tmscore;
         }// for iteration           
-
+        
     }//for gapopen
-
-
+    
+    
     delete []invmap;
     return tmscore_max;
 }
 
 
 void output_superpose(const string xname, const string yname,
-                      const string fname_super,
-                      double t[3], double u[3][3], const int ter_opt, const int mirror_opt,
-                      const char *seqM, const char *seqxA, const char *seqyA,
-                      const vector<string>&resi_vec1, const vector<string>&resi_vec2,
-                      const char *chainID1, const char *chainID2,
-                      const int xlen, const int ylen, const double d0A, const int n_ali8,
-                      const double rmsd, const double TM1, const double Liden)
+    const string fname_super,
+    double t[3], double u[3][3], const int ter_opt, const int mirror_opt,
+    const char *seqM, const char *seqxA, const char *seqyA,
+    const vector<string>&resi_vec1, const vector<string>&resi_vec2,
+    const char *chainID1, const char *chainID2,
+    const int xlen, const int ylen, const double d0A, const int n_ali8,
+    const double rmsd, const double TM1, const double Liden)
 {
     stringstream buf;
     stringstream buf_all;
@@ -3067,15 +3068,15 @@ void output_superpose(const string xname, const string yname,
     string asym_id; // chain ID
 
     buf_tm<<"REMARK TM-align"
-          <<"\nREMARK Chain 1:"<<setw(11)<<left<<xname+chainID1<<" Size= "<<xlen
-          <<"\nREMARK Chain 2:"<<setw(11)<<yname+chainID2<<right<<" Size= "<<ylen
-          <<" (TM-score is normalized by "<<setw(4)<<ylen<<", d0="
-          <<setiosflags(ios::fixed)<<setprecision(2)<<setw(6)<<d0A<<")"
-          <<"\nREMARK Aligned length="<<setw(4)<<n_ali8<<", RMSD="
-          <<setw(6)<<setiosflags(ios::fixed)<<setprecision(2)<<rmsd
-          <<", TM-score="<<setw(7)<<setiosflags(ios::fixed)<<setprecision(5)<<TM1
-          <<", ID="<<setw(5)<<setiosflags(ios::fixed)<<setprecision(3)
-          <<((n_ali8>0)?Liden/n_ali8:0)<<endl;
+        <<"\nREMARK Chain 1:"<<setw(11)<<left<<xname+chainID1<<" Size= "<<xlen
+        <<"\nREMARK Chain 2:"<<setw(11)<<yname+chainID2<<right<<" Size= "<<ylen
+        <<" (TM-score is normalized by "<<setw(4)<<ylen<<", d0="
+        <<setiosflags(ios::fixed)<<setprecision(2)<<setw(6)<<d0A<<")"
+        <<"\nREMARK Aligned length="<<setw(4)<<n_ali8<<", RMSD="
+        <<setw(6)<<setiosflags(ios::fixed)<<setprecision(2)<<rmsd
+        <<", TM-score="<<setw(7)<<setiosflags(ios::fixed)<<setprecision(5)<<TM1
+        <<", ID="<<setw(5)<<setiosflags(ios::fixed)<<setprecision(3)
+        <<((n_ali8>0)?Liden/n_ali8:0)<<endl;
     string rasmol_CA_header="load inline\nselect *A\nwireframe .45\nselect *B\nwireframe .20\nselect all\ncolor white\n";
     string rasmol_cartoon_header="load inline\nselect all\ncartoon\nselect *A\ncolor blue\nselect *B\ncolor red\nselect ligand\nwireframe 0.25\nselect solvent\nspacefill 0.25\nselect all\nexit\n"+buf_tm.str();
     buf<<rasmol_CA_header;
@@ -3137,8 +3138,8 @@ void output_superpose(const string xname, const string yname,
         getline(fin, line);
         if (ter_opt>=3 && line.compare(0,3,"TER")==0) after_ter=true;
         if (is_mmcif==false && line.size()>=54 &&
-            (line.compare(0, 6, "ATOM  ")==0 ||
-             line.compare(0, 6, "HETATM")==0)) // PDB format
+           (line.compare(0, 6, "ATOM  ")==0 ||
+            line.compare(0, 6, "HETATM")==0)) // PDB format
         {
             x[0]=atof(line.substr(30,8).c_str());
             x[1]=atof(line.substr(38,8).c_str());
@@ -3146,21 +3147,21 @@ void output_superpose(const string xname, const string yname,
             if (mirror_opt) x[2]=-x[2];
             transform(t, u, x, x1);
             buf_pdb<<line.substr(0,30)<<setiosflags(ios::fixed)
-                   <<setprecision(3)
-                   <<setw(8)<<x1[0] <<setw(8)<<x1[1] <<setw(8)<<x1[2]
-                   <<line.substr(54)<<'\n';
+                <<setprecision(3)
+                <<setw(8)<<x1[0] <<setw(8)<<x1[1] <<setw(8)<<x1[2]
+                <<line.substr(54)<<'\n';
 
             if (line[16]!='A' && line[16]!=' ') continue;
             if (after_ter && line.compare(0,6,"ATOM  ")==0) continue;
             lig_idx1++;
             buf_all_atm_lig<<line.substr(0,6)<<setw(5)<<lig_idx1
-                           <<line.substr(11,9)<<" A"<<line.substr(22,8)
-                           <<setiosflags(ios::fixed)<<setprecision(3)
-                           <<setw(8)<<x1[0]<<setw(8)<<x1[1] <<setw(8)<<x1[2]<<'\n';
+                <<line.substr(11,9)<<" A"<<line.substr(22,8)
+                <<setiosflags(ios::fixed)<<setprecision(3)
+                <<setw(8)<<x1[0]<<setw(8)<<x1[1] <<setw(8)<<x1[2]<<'\n';
             if (after_ter || line.compare(0,6,"ATOM  ")) continue;
             if (ter_opt>=2)
             {
-                if (ca_idx1 && asym_id.size() && asym_id!=line.substr(21,1))
+                if (ca_idx1 && asym_id.size() && asym_id!=line.substr(21,1)) 
                 {
                     after_ter=true;
                     continue;
@@ -3168,29 +3169,29 @@ void output_superpose(const string xname, const string yname,
                 asym_id=line[21];
             }
             buf_all_atm<<"ATOM  "<<setw(5)<<lig_idx1
-                       <<line.substr(11,9)<<" A"<<line.substr(22,8)
-                       <<setiosflags(ios::fixed)<<setprecision(3)
-                       <<setw(8)<<x1[0]<<setw(8)<<x1[1] <<setw(8)<<x1[2]<<'\n';
+                <<line.substr(11,9)<<" A"<<line.substr(22,8)
+                <<setiosflags(ios::fixed)<<setprecision(3)
+                <<setw(8)<<x1[0]<<setw(8)<<x1[1] <<setw(8)<<x1[2]<<'\n';
             if (find(resi_aln1.begin(),resi_aln1.end(),line.substr(22,4)
-            )!=resi_aln1.end())
+                )!=resi_aln1.end())
             {
                 buf_atm<<"ATOM  "<<setw(5)<<lig_idx1
-                       <<line.substr(11,9)<<" A"<<line.substr(22,8)
-                       <<setiosflags(ios::fixed)<<setprecision(3)
-                       <<setw(8)<<x1[0]<<setw(8)<<x1[1] <<setw(8)<<x1[2]<<'\n';
+                    <<line.substr(11,9)<<" A"<<line.substr(22,8)
+                    <<setiosflags(ios::fixed)<<setprecision(3)
+                    <<setw(8)<<x1[0]<<setw(8)<<x1[1] <<setw(8)<<x1[2]<<'\n';
             }
             if (line.substr(12,4)!=" CA ") continue;
             ca_idx1++;
             buf_all<<"ATOM  "<<setw(5)<<ca_idx1
-                   <<"  CA  "<<line.substr(17,3)<<" A"<<line.substr(22,8)
-                   <<setiosflags(ios::fixed)<<setprecision(3)
-                   <<setw(8)<<x1[0]<<setw(8)<<x1[1]<<setw(8)<<x1[2]<<'\n';
+                <<"  CA  "<<line.substr(17,3)<<" A"<<line.substr(22,8)
+                <<setiosflags(ios::fixed)<<setprecision(3)
+                <<setw(8)<<x1[0]<<setw(8)<<x1[1]<<setw(8)<<x1[2]<<'\n';
             if (find(resi_aln1.begin(),resi_aln1.end(),line.substr(22,4)
-            )==resi_aln1.end()) continue;
+                )==resi_aln1.end()) continue;
             buf<<"ATOM  "<<setw(5)<<ca_idx1
-               <<"  CA  "<<line.substr(17,3)<<" A"<<line.substr(22,8)
-               <<setiosflags(ios::fixed)<<setprecision(3)
-               <<setw(8)<<x1[0]<<setw(8)<<x1[1]<<setw(8)<<x1[2]<<'\n';
+                <<"  CA  "<<line.substr(17,3)<<" A"<<line.substr(22,8)
+                <<setiosflags(ios::fixed)<<setprecision(3)
+                <<setw(8)<<x1[0]<<setw(8)<<x1[1]<<setw(8)<<x1[2]<<'\n';
             idx_vec.push_back(ca_idx1);
         }
         else if (line.compare(0,5,"loop_")==0) // PDBx/mmCIF
@@ -3229,7 +3230,7 @@ void output_superpose(const string xname, const string yname,
                 if (_atom_site.count("pdbx_PDB_model_num"))
                 {
                     if (model_index.size() && model_index!=
-                                              line_vec[_atom_site["pdbx_PDB_model_num"]])
+                        line_vec[_atom_site["pdbx_PDB_model_num"]])
                         break;
                     model_index=line_vec[_atom_site["pdbx_PDB_model_num"]];
                 }
@@ -3240,7 +3241,7 @@ void output_superpose(const string xname, const string yname,
                 if (mirror_opt) x[2]=-x[2];
                 transform(t, u, x, x1);
 
-                if (_atom_site.count("label_alt_id")==0 ||
+                if (_atom_site.count("label_alt_id")==0 || 
                     line_vec[_atom_site["label_alt_id"]]=="." ||
                     line_vec[_atom_site["label_alt_id"]]=="A")
                 {
@@ -3253,100 +3254,100 @@ void output_superpose(const string xname, const string yname,
                     else if (atom.size()==2) atom=" "+atom+" ";
                     else if (atom.size()==3) atom=" "+atom;
                     else if (atom.size()>=5) atom=atom.substr(0,4);
-
+            
                     AA=line_vec[_atom_site["label_comp_id"]]; // residue name
                     if      (AA.size()==1) AA="  "+AA;
                     else if (AA.size()==2) AA=" " +AA;
                     else if (AA.size()>=4) AA=AA.substr(0,3);
-
+                
                     if (_atom_site.count("auth_seq_id"))
                         resi=line_vec[_atom_site["auth_seq_id"]];
                     else resi=line_vec[_atom_site["label_seq_id"]];
                     while (resi.size()<4) resi=' '+resi;
                     if (resi.size()>4) resi=resi.substr(0,4);
-
+                
                     inscode=' ';
-                    if (_atom_site.count("pdbx_PDB_ins_code") &&
+                    if (_atom_site.count("pdbx_PDB_ins_code") && 
                         line_vec[_atom_site["pdbx_PDB_ins_code"]]!="?")
                         inscode=line_vec[_atom_site["pdbx_PDB_ins_code"]][0];
-
+                    
                     if (_atom_site.count("auth_asym_id"))
                     {
-                        if (ter_opt>=2 && ca_idx1 && asym_id.size() &&
+                        if (ter_opt>=2 && ca_idx1 && asym_id.size() && 
                             asym_id!=line_vec[_atom_site["auth_asym_id"]])
                             after_ter=true;
                         asym_id=line_vec[_atom_site["auth_asym_id"]];
                     }
                     else if (_atom_site.count("label_asym_id"))
                     {
-                        if (ter_opt>=2 && ca_idx1 && asym_id.size() &&
+                        if (ter_opt>=2 && ca_idx1 && asym_id.size() && 
                             asym_id!=line_vec[_atom_site["label_asym_id"]])
                             after_ter=true;
                         asym_id=line_vec[_atom_site["label_asym_id"]];
                     }
                     buf_pdb<<left<<setw(6)
-                           <<line_vec[_atom_site["group_PDB"]]<<right
-                           <<setw(5)<<lig_idx1%100000<<' '<<atom<<' '
-                           <<AA<<" "<<asym_id[asym_id.size()-1]
-                           <<resi<<inscode<<"   "
-                           <<setiosflags(ios::fixed)<<setprecision(3)
-                           <<setw(8)<<x1[0]
-                           <<setw(8)<<x1[1]
-                           <<setw(8)<<x1[2]<<'\n';
+                        <<line_vec[_atom_site["group_PDB"]]<<right
+                        <<setw(5)<<lig_idx1%100000<<' '<<atom<<' '
+                        <<AA<<" "<<asym_id[asym_id.size()-1]
+                        <<resi<<inscode<<"   "
+                        <<setiosflags(ios::fixed)<<setprecision(3)
+                        <<setw(8)<<x1[0]
+                        <<setw(8)<<x1[1]
+                        <<setw(8)<<x1[2]<<'\n';
 
                     if (after_ter==false ||
                         line_vec[_atom_site["group_pdb"]]=="HETATM")
                     {
                         lig_idx1++;
                         buf_all_atm_lig<<left<<setw(6)
-                                       <<line_vec[_atom_site["group_PDB"]]<<right
-                                       <<setw(5)<<lig_idx1%100000<<' '<<atom<<' '
-                                       <<AA<<" A"<<resi<<inscode<<"   "
-                                       <<setiosflags(ios::fixed)<<setprecision(3)
-                                       <<setw(8)<<x1[0]
-                                       <<setw(8)<<x1[1]
-                                       <<setw(8)<<x1[2]<<'\n';
+                            <<line_vec[_atom_site["group_PDB"]]<<right
+                            <<setw(5)<<lig_idx1%100000<<' '<<atom<<' '
+                            <<AA<<" A"<<resi<<inscode<<"   "
+                            <<setiosflags(ios::fixed)<<setprecision(3)
+                            <<setw(8)<<x1[0]
+                            <<setw(8)<<x1[1]
+                            <<setw(8)<<x1[2]<<'\n';
                         if (after_ter==false &&
                             line_vec[_atom_site["group_PDB"]]=="ATOM")
                         {
                             buf_all_atm<<"ATOM  "<<setw(6)
-                                       <<setw(5)<<lig_idx1%100000<<' '<<atom<<' '
-                                       <<AA<<" A"<<resi<<inscode<<"   "
-                                       <<setiosflags(ios::fixed)<<setprecision(3)
-                                       <<setw(8)<<x1[0]
-                                       <<setw(8)<<x1[1]
-                                       <<setw(8)<<x1[2]<<'\n';
+                                <<setw(5)<<lig_idx1%100000<<' '<<atom<<' '
+                                <<AA<<" A"<<resi<<inscode<<"   "
+                                <<setiosflags(ios::fixed)<<setprecision(3)
+                                <<setw(8)<<x1[0]
+                                <<setw(8)<<x1[1]
+                                <<setw(8)<<x1[2]<<'\n';
                             if (find(resi_aln1.begin(),resi_aln1.end(),resi
-                            )!=resi_aln1.end())
+                                )!=resi_aln1.end())
                             {
                                 buf_atm<<"ATOM  "<<setw(6)
-                                       <<setw(5)<<lig_idx1%100000<<' '
-                                       <<atom<<' '<<AA<<" A"<<resi<<inscode<<"   "
-                                       <<setiosflags(ios::fixed)<<setprecision(3)
-                                       <<setw(8)<<x1[0]
-                                       <<setw(8)<<x1[1]
-                                       <<setw(8)<<x1[2]<<'\n';
+                                    <<setw(5)<<lig_idx1%100000<<' '
+                                    <<atom<<' '<<AA<<" A"<<resi<<inscode<<"   "
+                                    <<setiosflags(ios::fixed)<<setprecision(3)
+                                    <<setw(8)<<x1[0]
+                                    <<setw(8)<<x1[1]
+                                    <<setw(8)<<x1[2]<<'\n';
                             }
                             if (atom==" CA ")
                             {
                                 ca_idx1++;
                                 buf_all<<"ATOM  "<<setw(6)
-                                       <<setw(5)<<ca_idx1%100000<<"  CA  "
-                                       <<AA<<" A"<<resi<<inscode<<"   "
-                                       <<setiosflags(ios::fixed)<<setprecision(3)
-                                       <<setw(8)<<x1[0]
-                                       <<setw(8)<<x1[1]
-                                       <<setw(8)<<x1[2]<<'\n';
+                                    <<setw(5)<<ca_idx1%100000<<"  CA  "
+                                    <<AA<<" A"<<resi<<inscode<<"   "
+                                    <<setiosflags(ios::fixed)<<setprecision(3)
+                                    <<setw(8)<<x1[0]
+                                    <<setw(8)<<x1[1]
+                                    <<setw(8)<<x1[2]<<'\n';
                                 if (find(resi_aln1.begin(),resi_aln1.end(),resi
-                                )!=resi_aln1.end())
+                                    )!=resi_aln1.end())
                                 {
                                     buf<<"ATOM  "<<setw(6)
-                                       <<setw(5)<<ca_idx1%100000<<"  CA  "
-                                       <<AA<<" A"<<resi<<inscode<<"   "
-                                       <<setiosflags(ios::fixed)<<setprecision(3)
-                                       <<setw(8)<<x1[0]
-                                       <<setw(8)<<x1[1]
-                                       <<setw(8)<<x1[2]<<'\n';
+                                    <<setw(5)<<ca_idx1%100000<<"  CA  "
+                                    <<AA<<" A"<<resi<<inscode<<"   "
+                                    <<setiosflags(ios::fixed)<<setprecision(3)
+                                    <<setw(8)<<x1[0]
+                                    <<setw(8)<<x1[1]
+                                    <<setw(8)<<x1[2]<<'\n';
                                     idx_vec.push_back(ca_idx1);
                                 }
                             }
@@ -3375,9 +3376,9 @@ void output_superpose(const string xname, const string yname,
     buf_all_atm<<"TER\n";
     buf_all_atm_lig<<"TER\n";
     for (i=1;i<ca_idx1;i++) buf_all<<"CONECT"
-                                   <<setw(5)<<i%100000<<setw(5)<<(i+1)%100000<<'\n';
+        <<setw(5)<<i%100000<<setw(5)<<(i+1)%100000<<'\n';
     for (i=1;i<idx_vec.size();i++) buf<<"CONECT"
-                                      <<setw(5)<<idx_vec[i-1]%100000<<setw(5)<<idx_vec[i]%100000<<'\n';
+        <<setw(5)<<idx_vec[i-1]%100000<<setw(5)<<idx_vec[i]%100000<<'\n';
     idx_vec.clear();
 
     /* read second file */
@@ -3389,13 +3390,13 @@ void output_superpose(const string xname, const string yname,
         getline(fin, line);
         if (ter_opt>=3 && line.compare(0,3,"TER")==0) after_ter=true;
         if (line.size()>=54 && (line.compare(0, 6, "ATOM  ")==0 ||
-                                line.compare(0, 6, "HETATM")==0)) // PDB format
+            line.compare(0, 6, "HETATM")==0)) // PDB format
         {
             if (line[16]!='A' && line[16]!=' ') continue;
             if (after_ter && line.compare(0,6,"ATOM  ")==0) continue;
             lig_idx2++;
             buf_all_atm_lig<<line.substr(0,6)<<setw(5)<<lig_idx1+lig_idx2
-                           <<line.substr(11,9)<<" B"<<line.substr(22,32)<<'\n';
+                <<line.substr(11,9)<<" B"<<line.substr(22,32)<<'\n';
             if (after_ter || line.compare(0,6,"ATOM  ")) continue;
             if (ter_opt>=2)
             {
@@ -3407,21 +3408,21 @@ void output_superpose(const string xname, const string yname,
                 asym_id=line[21];
             }
             buf_all_atm<<"ATOM  "<<setw(5)<<lig_idx1+lig_idx2
-                       <<line.substr(11,9)<<" B"<<line.substr(22,32)<<'\n';
+                <<line.substr(11,9)<<" B"<<line.substr(22,32)<<'\n';
             if (find(resi_aln2.begin(),resi_aln2.end(),line.substr(22,4)
-            )!=resi_aln2.end())
+                )!=resi_aln2.end())
             {
                 buf_atm<<"ATOM  "<<setw(5)<<lig_idx1+lig_idx2
-                       <<line.substr(11,9)<<" B"<<line.substr(22,32)<<'\n';
+                    <<line.substr(11,9)<<" B"<<line.substr(22,32)<<'\n';
             }
             if (line.substr(12,4)!=" CA ") continue;
             ca_idx2++;
             buf_all<<"ATOM  "<<setw(5)<<ca_idx1+ca_idx2<<"  CA  "
-                   <<line.substr(17,3)<<" B"<<line.substr(22,32)<<'\n';
+                <<line.substr(17,3)<<" B"<<line.substr(22,32)<<'\n';
             if (find(resi_aln2.begin(),resi_aln2.end(),line.substr(22,4)
-            )==resi_aln2.end()) continue;
+                )==resi_aln2.end()) continue;
             buf<<"ATOM  "<<setw(5)<<ca_idx1+ca_idx2<<"  CA  "
-               <<line.substr(17,3)<<" B"<<line.substr(22,32)<<'\n';
+                <<line.substr(17,3)<<" B"<<line.substr(22,32)<<'\n';
             idx_vec.push_back(ca_idx1+ca_idx2);
         }
         else if (line.compare(0,5,"loop_")==0) // PDBx/mmCIF
@@ -3454,12 +3455,12 @@ void output_superpose(const string xname, const string yname,
                 if (_atom_site.count("pdbx_PDB_model_num"))
                 {
                     if (model_index.size() && model_index!=
-                                              line_vec[_atom_site["pdbx_PDB_model_num"]])
+                        line_vec[_atom_site["pdbx_PDB_model_num"]])
                         break;
                     model_index=line_vec[_atom_site["pdbx_PDB_model_num"]];
                 }
 
-                if (_atom_site.count("label_alt_id")==0 ||
+                if (_atom_site.count("label_alt_id")==0 || 
                     line_vec[_atom_site["label_alt_id"]]=="." ||
                     line_vec[_atom_site["label_alt_id"]]=="A")
                 {
@@ -3472,28 +3473,28 @@ void output_superpose(const string xname, const string yname,
                     else if (atom.size()==2) atom=" "+atom+" ";
                     else if (atom.size()==3) atom=" "+atom;
                     else if (atom.size()>=5) atom=atom.substr(0,4);
-
+            
                     AA=line_vec[_atom_site["label_comp_id"]]; // residue name
                     if      (AA.size()==1) AA="  "+AA;
                     else if (AA.size()==2) AA=" " +AA;
                     else if (AA.size()>=4) AA=AA.substr(0,3);
-
+                
                     if (_atom_site.count("auth_seq_id"))
                         resi=line_vec[_atom_site["auth_seq_id"]];
                     else resi=line_vec[_atom_site["label_seq_id"]];
                     while (resi.size()<4) resi=' '+resi;
                     if (resi.size()>4) resi=resi.substr(0,4);
-
+                
                     inscode=' ';
-                    if (_atom_site.count("pdbx_PDB_ins_code") &&
+                    if (_atom_site.count("pdbx_PDB_ins_code") && 
                         line_vec[_atom_site["pdbx_PDB_ins_code"]]!="?")
                         inscode=line_vec[_atom_site["pdbx_PDB_ins_code"]][0];
-
+                    
                     if (ter_opt>=2)
                     {
                         if (_atom_site.count("auth_asym_id"))
                         {
-                            if (ca_idx2 && asym_id.size() &&
+                            if (ca_idx2 && asym_id.size() && 
                                 asym_id!=line_vec[_atom_site["auth_asym_id"]])
                                 after_ter=true;
                             else
@@ -3501,66 +3502,66 @@ void output_superpose(const string xname, const string yname,
                         }
                         else if (_atom_site.count("label_asym_id"))
                         {
-                            if (ca_idx2 && asym_id.size() &&
+                            if (ca_idx2 && asym_id.size() && 
                                 asym_id!=line_vec[_atom_site["label_asym_id"]])
                                 after_ter=true;
                             else
                                 asym_id=line_vec[_atom_site["label_asym_id"]];
                         }
                     }
-                    if (after_ter==false ||
+                    if (after_ter==false || 
                         line_vec[_atom_site["group_PDB"]]=="HETATM")
                     {
                         lig_idx2++;
                         buf_all_atm_lig<<left<<setw(6)
-                                       <<line_vec[_atom_site["group_PDB"]]<<right
-                                       <<setw(5)<<(lig_idx1+lig_idx2)%100000<<' '
-                                       <<atom<<' '<<AA<<" B"<<resi<<inscode<<"   "
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_x"]]
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_y"]]
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_z"]]
-                                       <<'\n';
+                            <<line_vec[_atom_site["group_PDB"]]<<right
+                            <<setw(5)<<(lig_idx1+lig_idx2)%100000<<' '
+                            <<atom<<' '<<AA<<" B"<<resi<<inscode<<"   "
+                            <<setw(8)<<line_vec[_atom_site["Cartn_x"]]
+                            <<setw(8)<<line_vec[_atom_site["Cartn_y"]]
+                            <<setw(8)<<line_vec[_atom_site["Cartn_z"]]
+                            <<'\n';
                         if (after_ter==false &&
                             line_vec[_atom_site["group_PDB"]]=="ATOM")
                         {
                             buf_all_atm<<"ATOM  "<<setw(6)
-                                       <<setw(5)<<(lig_idx1+lig_idx2)%100000<<' '
-                                       <<atom<<' '<<AA<<" B"<<resi<<inscode<<"   "
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_x"]]
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_y"]]
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_z"]]
-                                       <<'\n';
+                                <<setw(5)<<(lig_idx1+lig_idx2)%100000<<' '
+                                <<atom<<' '<<AA<<" B"<<resi<<inscode<<"   "
+                                <<setw(8)<<line_vec[_atom_site["Cartn_x"]]
+                                <<setw(8)<<line_vec[_atom_site["Cartn_y"]]
+                                <<setw(8)<<line_vec[_atom_site["Cartn_z"]]
+                                <<'\n';
                             if (find(resi_aln2.begin(),resi_aln2.end(),resi
-                            )!=resi_aln2.end())
+                                    )!=resi_aln2.end())
                             {
                                 buf_atm<<"ATOM  "<<setw(6)
-                                       <<setw(5)<<(lig_idx1+lig_idx2)%100000<<' '
-                                       <<atom<<' '<<AA<<" B"<<resi<<inscode<<"   "
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_x"]]
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_y"]]
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_z"]]
-                                       <<'\n';
+                                    <<setw(5)<<(lig_idx1+lig_idx2)%100000<<' '
+                                    <<atom<<' '<<AA<<" B"<<resi<<inscode<<"   "
+                                    <<setw(8)<<line_vec[_atom_site["Cartn_x"]]
+                                    <<setw(8)<<line_vec[_atom_site["Cartn_y"]]
+                                    <<setw(8)<<line_vec[_atom_site["Cartn_z"]]
+                                    <<'\n';
                             }
                             if (atom==" CA ")
                             {
                                 ca_idx2++;
                                 buf_all<<"ATOM  "<<setw(6)
-                                       <<setw(5)<<(ca_idx1+ca_idx2)%100000
-                                       <<"  CA  "<<AA<<" B"<<resi<<inscode<<"   "
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_x"]]
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_y"]]
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_z"]]
-                                       <<'\n';
+                                    <<setw(5)<<(ca_idx1+ca_idx2)%100000
+                                    <<"  CA  "<<AA<<" B"<<resi<<inscode<<"   "
+                                    <<setw(8)<<line_vec[_atom_site["Cartn_x"]]
+                                    <<setw(8)<<line_vec[_atom_site["Cartn_y"]]
+                                    <<setw(8)<<line_vec[_atom_site["Cartn_z"]]
+                                    <<'\n';
                                 if (find(resi_aln2.begin(),resi_aln2.end(),resi
-                                )!=resi_aln2.end())
+                                    )!=resi_aln2.end())
                                 {
                                     buf<<"ATOM  "<<setw(6)
-                                       <<setw(5)<<(ca_idx1+ca_idx2)%100000
-                                       <<"  CA  "<<AA<<" B"<<resi<<inscode<<"   "
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_x"]]
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_y"]]
-                                       <<setw(8)<<line_vec[_atom_site["Cartn_z"]]
-                                       <<'\n';
+                                    <<setw(5)<<(ca_idx1+ca_idx2)%100000
+                                    <<"  CA  "<<AA<<" B"<<resi<<inscode<<"   "
+                                    <<setw(8)<<line_vec[_atom_site["Cartn_x"]]
+                                    <<setw(8)<<line_vec[_atom_site["Cartn_y"]]
+                                    <<setw(8)<<line_vec[_atom_site["Cartn_z"]]
+                                    <<'\n';
                                     idx_vec.push_back(ca_idx1+ca_idx2);
                                 }
                             }
@@ -3584,9 +3585,9 @@ void output_superpose(const string xname, const string yname,
     buf_all_atm<<"TER\n";
     buf_all_atm_lig<<"TER\n";
     for (i=ca_idx1+1;i<ca_idx1+ca_idx2;i++) buf_all<<"CONECT"
-                                                   <<setw(5)<<i%100000<<setw(5)<<(i+1)%100000<<'\n';
+        <<setw(5)<<i%100000<<setw(5)<<(i+1)%100000<<'\n';
     for (i=1;i<idx_vec.size();i++) buf<<"CONECT"
-                                      <<setw(5)<<idx_vec[i-1]%100000<<setw(5)<<idx_vec[i]%100000<<'\n';
+        <<setw(5)<<idx_vec[i-1]%100000<<setw(5)<<idx_vec[i]%100000<<'\n';
     idx_vec.clear();
 
     /* write pymol script */
@@ -3600,20 +3601,20 @@ void output_superpose(const string xname, const string yname,
     for (i=0;i<pml_list.size();i++)
     {
         buf_pymol<<"#!/usr/bin/env pymol\n"
-                 <<"load "<<pml_list[i]<<", format=pdb\n"
-                 <<"hide all\n"
-                 <<((i==0 || i==2)?("show stick\n"):("show cartoon\n"))
-                 <<"color blue, chain A\n"
-                 <<"color red, chain B\n"
-                 <<"set ray_shadow, 0\n"
-                 <<"set stick_radius, 0.3\n"
-                 <<"set sphere_scale, 0.25\n"
-                 <<"show stick, not polymer\n"
-                 <<"show sphere, not polymer\n"
-                 <<"bg_color white\n"
-                 <<"set transparency=0.2\n"
-                 <<"zoom polymer\n"
-                 <<endl;
+            <<"load "<<pml_list[i]<<", format=pdb\n"
+            <<"hide all\n"
+            <<((i==0 || i==2)?("show stick\n"):("show cartoon\n"))
+            <<"color blue, chain A\n"
+            <<"color red, chain B\n"
+            <<"set ray_shadow, 0\n"
+            <<"set stick_radius, 0.3\n"
+            <<"set sphere_scale, 0.25\n"
+            <<"show stick, not polymer\n"
+            <<"show sphere, not polymer\n"
+            <<"bg_color white\n"
+            <<"set transparency=0.2\n"
+            <<"zoom polymer\n"
+            <<endl;
         fp.open((pml_list[i]+".pml").c_str());
         fp<<buf_pymol.str();
         fp.close();
@@ -3621,7 +3622,7 @@ void output_superpose(const string xname, const string yname,
         pml_list[i].clear();
     }
     pml_list.clear();
-
+    
     /* write rasmol script */
     fp.open((fname_super).c_str());
     fp<<buf.str();
@@ -3663,7 +3664,7 @@ void output_superpose(const string xname, const string yname,
 
 /* extract rotation matrix based on TMscore8 */
 void output_rotation_matrix(const char* fname_matrix,
-                            const double t[3], const double u[3][3])
+    const double t[3], const double u[3][3])
 {
     fstream fout;
     fout.open(fname_matrix, ios::out | ios::trunc);
@@ -3693,27 +3694,27 @@ void output_rotation_matrix(const char* fname_matrix,
 
 //output the final results
 void output_results(
-        const string xname, const string yname,
-        const char *chainID1, const char *chainID2,
-        const int xlen, const int ylen, double t[3], double u[3][3],
-        const double TM1, const double TM2,
-        const double TM3, const double TM4, const double TM5,
-        const double rmsd, const double d0_out,
-        const char *seqM, const char *seqxA, const char *seqyA, const double Liden,
-        const int n_ali8, const int L_ali,
-        const double TM_ali, const double rmsd_ali, const double TM_0,
-        const double d0_0, const double d0A, const double d0B,
-        const double Lnorm_ass, const double d0_scale,
-        const double d0a, const double d0u, const char* fname_matrix,
-        const int outfmt_opt, const int ter_opt, const string fname_super,
-        const int i_opt, const int a_opt, const bool u_opt, const bool d_opt,
-        const int mirror_opt,
-        const vector<string>&resi_vec1, const vector<string>&resi_vec2)
+    const string xname, const string yname,
+    const char *chainID1, const char *chainID2,
+    const int xlen, const int ylen, double t[3], double u[3][3],
+    const double TM1, const double TM2,
+    const double TM3, const double TM4, const double TM5,
+    const double rmsd, const double d0_out,
+    const char *seqM, const char *seqxA, const char *seqyA, const double Liden,
+    const int n_ali8, const int L_ali,
+    const double TM_ali, const double rmsd_ali, const double TM_0,
+    const double d0_0, const double d0A, const double d0B,
+    const double Lnorm_ass, const double d0_scale, 
+    const double d0a, const double d0u, const char* fname_matrix,
+    const int outfmt_opt, const int ter_opt, const string fname_super,
+    const int i_opt, const int a_opt, const bool u_opt, const bool d_opt,
+    const int mirror_opt,
+    const vector<string>&resi_vec1, const vector<string>&resi_vec2)
 {
     if (outfmt_opt<=0)
     {
         printf("\nName of Chain_1: %s%s (to be superimposed onto Chain_2)\n",
-               xname.c_str(), chainID1);
+            xname.c_str(), chainID1);
         printf("Name of Chain_2: %s%s\n", yname.c_str(), chainID2);
         printf("Length of Chain_1: %d residues\n", xlen);
         printf("Length of Chain_2: %d residues\n\n", ylen);
@@ -3732,7 +3733,7 @@ void output_results(
         if (d_opt)
             printf("TM-score= %6.5f (if scaled by user-specified d0= %.2f, and LN= %d)\n", TM5, d0_scale, ylen);
         printf("(You should use TM-score normalized by length of the reference structure)\n");
-
+    
         //output alignment
         printf("\n(\":\" denotes residue pairs of d < %4.1f Angstrom, ", d0_out);
         printf("\".\" denotes other aligned residues)\n");
@@ -3743,14 +3744,14 @@ void output_results(
     else if (outfmt_opt==1)
     {
         printf(">%s%s\tL=%d\td0=%.2f\tseqID=%.3f\tTM-score=%.5f\n",
-               xname.c_str(), chainID1, xlen, d0B, Liden/xlen, TM2);
+            xname.c_str(), chainID1, xlen, d0B, Liden/xlen, TM2);
         printf("%s\n", seqxA);
         printf(">%s%s\tL=%d\td0=%.2f\tseqID=%.3f\tTM-score=%.5f\n",
-               yname.c_str(), chainID2, ylen, d0A, Liden/ylen, TM1);
+            yname.c_str(), chainID2, ylen, d0A, Liden/ylen, TM1);
         printf("%s\n", seqyA);
 
         printf("# Lali=%d\tRMSD=%.2f\tseqID_ali=%.3f\n",
-               n_ali8, rmsd, (n_ali8>0)?Liden/n_ali8:0);
+            n_ali8, rmsd, (n_ali8>0)?Liden/n_ali8:0);
 
         if (i_opt)
             printf("# User-specified initial alignment: TM=%.5lf\tLali=%4d\trmsd=%.3lf\n", TM_ali, L_ali, rmsd_ali);
@@ -3769,31 +3770,31 @@ void output_results(
     else if (outfmt_opt==2)
     {
         printf("%s%s\t%s%s\t%.4f\t%.4f\t%.2f\t%4.3f\t%4.3f\t%4.3f\t%d\t%d\t%d",
-               xname.c_str(), chainID1, yname.c_str(), chainID2, TM2, TM1, rmsd,
-               Liden/xlen, Liden/ylen, (n_ali8>0)?Liden/n_ali8:0,
-               xlen, ylen, n_ali8);
+            xname.c_str(), chainID1, yname.c_str(), chainID2, TM2, TM1, rmsd,
+            Liden/xlen, Liden/ylen, (n_ali8>0)?Liden/n_ali8:0,
+            xlen, ylen, n_ali8);
     }
     cout << endl;
 
-    if (strlen(fname_matrix))
+    if (strlen(fname_matrix)) 
         output_rotation_matrix(fname_matrix, t, u);
     if (fname_super.size())
         output_superpose(xname, yname, fname_super, t, u, ter_opt, mirror_opt,
-                         seqM, seqxA, seqyA, resi_vec1, resi_vec2, chainID1, chainID2,
-                         xlen, ylen, d0A, n_ali8, rmsd, TM1, Liden);
+            seqM, seqxA, seqyA, resi_vec1, resi_vec2, chainID1, chainID2,
+            xlen, ylen, d0A, n_ali8, rmsd, TM1, Liden);
 }
 
 double standard_TMscore(double **r1, double **r2, double **xtm, double **ytm,
-                        double **xt, double **x, double **y, int xlen, int ylen, int invmap[],
-                        int& L_ali, double& RMSD, double D0_MIN, double Lnorm, double d0,
-                        double d0_search, double score_d8, double t[3], double u[3][3],
-                        const int mol_type)
+    double **xt, double **x, double **y, int xlen, int ylen, int invmap[],
+    int& L_ali, double& RMSD, double D0_MIN, double Lnorm, double d0,
+    double d0_search, double score_d8, double t[3], double u[3][3],
+    const int mol_type)
 {
     D0_MIN = 0.5;
     Lnorm = ylen;
     if (mol_type>0) // RNA
     {
-        if     (Lnorm<=11) d0=0.3;
+        if     (Lnorm<=11) d0=0.3; 
         else if(Lnorm>11 && Lnorm<=15) d0=0.4;
         else if(Lnorm>15 && Lnorm<=19) d0=0.5;
         else if(Lnorm>19 && Lnorm<=23) d0=0.6;
@@ -3840,14 +3841,14 @@ double standard_TMscore(double **r1, double **r2, double **xtm, double **ytm,
 
     Kabsch(r1, r2, n_al, 0, &RMSD, t, u);
     RMSD = sqrt( RMSD/(1.0*n_al) );
-
+    
     int temp_simplify_step = 1;
     int temp_score_sum_method = 0;
     d0_search = d0_input;
     double rms = 0.0;
     tmscore = TMscore8_search_standard(r1, r2, xtm, ytm, xt, n_al, t, u,
-                                       temp_simplify_step, temp_score_sum_method, &rms, d0_input,
-                                       score_d8, d0);
+        temp_simplify_step, temp_score_sum_method, &rms, d0_input,
+        score_d8, d0);
     tmscore = tmscore * n_al / (1.0*Lnorm);
 
     return tmscore;
@@ -3866,14 +3867,14 @@ void copy_t_u(double t[3], double u[3][3], double t0[3], double u0[3][3])
 
 /* calculate approximate TM-score given rotation matrix */
 double approx_TM(const int xlen, const int ylen, const int a_opt,
-                 double **xa, double **ya, double t[3], double u[3][3],
-                 const int invmap0[], const int mol_type)
+    double **xa, double **ya, double t[3], double u[3][3],
+    const int invmap0[], const int mol_type)
 {
     double Lnorm_0=ylen; // normalized by the second protein
     if (a_opt==-2 && xlen>ylen) Lnorm_0=xlen;      // longer
     else if (a_opt==-1 && xlen<ylen) Lnorm_0=xlen; // shorter
     else if (a_opt==1) Lnorm_0=(xlen+ylen)/2.;     // average
-
+    
     double D0_MIN;
     double Lnorm;
     double d0;
@@ -3899,20 +3900,14 @@ double approx_TM(const int xlen, const int ylen, const int a_opt,
 }
 
 void clean_up_after_approx_TM(int *invmap0, int *invmap,
-                              double **score, bool **path, double **val, double **xtm, double **ytm,
-                              double **xt, double **r1, double **r2, const int xlen, const int minlen)
+    double **score, bool **path, double **val, double **xtm, double **ytm,
+    double **xt, double **r1, double **r2, const int xlen, const int minlen)
 {
     delete [] invmap0;
     delete [] invmap;
-    if(score != NULL) {
-        DeleteArray(&score, xlen + 1);
-    }
-    if(path != NULL) {
-        DeleteArray(&path, xlen + 1);
-    }
-    if(val != NULL) {
-        DeleteArray(&val, xlen + 1);
-    }
+    DeleteArray(&score, xlen+1);
+    DeleteArray(&path, xlen+1);
+    DeleteArray(&val, xlen+1);
     DeleteArray(&xtm, minlen);
     DeleteArray(&ytm, minlen);
     DeleteArray(&xt, xlen);
@@ -3926,27 +3921,27 @@ void clean_up_after_approx_TM(int *invmap0, int *invmap,
  * 1   - terminated due to exception
  * 2-7 - pre-terminated due to low TM-score */
 int TMalign_main(double **xa, double **ya,
-                 const char *seqx, const char *seqy, const char *secx, const char *secy,
-                 double t0[3], double u0[3][3],
-                 double &TM1, double &TM2, double &TM3, double &TM4, double &TM5,
-                 double &d0_0, double &TM_0,
-                 double &d0A, double &d0B, double &d0u, double &d0a, double &d0_out,
-                 string &seqM, string &seqxA, string &seqyA,
-                 double &rmsd0, int &L_ali, double &Liden,
-                 double &TM_ali, double &rmsd_ali, int &n_ali, int &n_ali8,
-                 const int xlen, const int ylen,
-                 const vector<string> sequence, const double Lnorm_ass,
-                 const double d0_scale, const int i_opt, const int a_opt,
-                 const bool u_opt, const bool d_opt, const bool fast_opt,
-                 const int mol_type, const double TMcut=-1)
+    const char *seqx, const char *seqy, const char *secx, const char *secy,
+    double t0[3], double u0[3][3],
+    double &TM1, double &TM2, double &TM3, double &TM4, double &TM5,
+    double &d0_0, double &TM_0,
+    double &d0A, double &d0B, double &d0u, double &d0a, double &d0_out,
+    string &seqM, string &seqxA, string &seqyA,
+    double &rmsd0, int &L_ali, double &Liden,
+    double &TM_ali, double &rmsd_ali, int &n_ali, int &n_ali8,
+    const int xlen, const int ylen,
+    const vector<string> sequence, const double Lnorm_ass,
+    const double d0_scale, const int i_opt, const int a_opt,
+    const bool u_opt, const bool d_opt, const bool fast_opt,
+    const int mol_type, const double TMcut=-1)
 {
     double D0_MIN;        //for d0
     double Lnorm;         //normalization length
     double score_d8,d0,d0_search,dcu0;//for TMscore search
     double t[3], u[3][3]; //Kabsch translation vector and rotation matrix
-    double **score = NULL;       // Input score table for dynamic programming
-    bool   **path = NULL;        // for dynamic programming
-    double **val = NULL;         // for dynamic programming
+    double **score;       // Input score table for dynamic programming
+    bool   **path;        // for dynamic programming  
+    double **val;         // for dynamic programming  
     double **xtm, **ytm;  // for TMscore search engine
     double **xt;          //for saving the superposed version of r_1 or xtm
     double **r1, **r2;    // for Kabsch rotation
@@ -3955,6 +3950,9 @@ int TMalign_main(double **xa, double **ya,
     /* allocate memory     */
     /***********************/
     int minlen = min(xlen, ylen);
+    NewArray(&score, xlen+1, ylen+1);
+    NewArray(&path, xlen+1, ylen+1);
+    NewArray(&val, xlen+1, ylen+1);
     NewArray(&xtm, minlen, 3);
     NewArray(&ytm, minlen, 3);
     NewArray(&xt, xlen, 3);
@@ -3964,8 +3962,8 @@ int TMalign_main(double **xa, double **ya,
     /***********************/
     /*    parameter set    */
     /***********************/
-    parameter_set4search(xlen, ylen, D0_MIN, Lnorm,
-                         score_d8, d0, d0_search, dcu0);
+    parameter_set4search(xlen, ylen, D0_MIN, Lnorm, 
+        score_d8, d0, d0_search, dcu0);
     int simplify_step    = 40; //for similified search engine
     int score_sum_method = 8;  //for scoring method, whether only sum over pairs with dis<score_d8
 
@@ -4012,13 +4010,13 @@ int TMalign_main(double **xa, double **ya,
         int prevLnorm = Lnorm;
         double prevd0 = d0;
         TM_ali = standard_TMscore(r1, r2, xtm, ytm, xt, xa, ya, xlen, ylen,
-                                  invmap, L_ali, rmsd_ali, D0_MIN, Lnorm, d0, d0_search, score_d8,
-                                  t, u, mol_type);
+            invmap, L_ali, rmsd_ali, D0_MIN, Lnorm, d0, d0_search, score_d8,
+            t, u, mol_type);
         D0_MIN = prevD0_MIN;
         Lnorm = prevLnorm;
         d0 = prevd0;
         TM = detailed_search_standard(r1, r2, xtm, ytm, xt, xa, ya, xlen, ylen,
-                                      invmap, t, u, 40, 8, local_d0_search, true, Lnorm, score_d8, d0);
+            invmap, t, u, 40, 8, local_d0_search, true, Lnorm, score_d8, d0);
         if (TM > TMmax)
         {
             TMmax = TM;
@@ -4032,21 +4030,17 @@ int TMalign_main(double **xa, double **ya,
     /******************************************************/
     if (!bAlignStick)
     {
-        NewArray(&score, xlen+1, ylen+1);
-        NewArray(&path, xlen+1, ylen+1);
-        NewArray(&val, xlen+1, ylen+1);
-
         get_initial(r1, r2, xtm, ytm, xa, ya, xlen, ylen, invmap0, d0,
-                    d0_search, fast_opt, t, u);
+            d0_search, fast_opt, t, u);
         TM = detailed_search(r1, r2, xtm, ytm, xt, xa, ya, xlen, ylen, invmap0,
-                             t, u, simplify_step, score_sum_method, local_d0_search, Lnorm,
-                             score_d8, d0);
+            t, u, simplify_step, score_sum_method, local_d0_search, Lnorm,
+            score_d8, d0);
         if (TM>TMmax) TMmax = TM;
         if (TMcut>0) copy_t_u(t, u, t0, u0);
         //run dynamic programing iteratively to find the best alignment
         TM = DP_iter(r1, r2, xtm, ytm, xt, path, val, xa, ya, xlen, ylen,
-                     t, u, invmap, 0, 2, (fast_opt)?2:30, local_d0_search,
-                     D0_MIN, Lnorm, d0, score_d8);
+             t, u, invmap, 0, 2, (fast_opt)?2:30, local_d0_search,
+             D0_MIN, Lnorm, d0, score_d8);
         if (TM>TMmax)
         {
             TMmax = TM;
@@ -4057,13 +4051,13 @@ int TMalign_main(double **xa, double **ya,
         if (TMcut>0) // pre-terminate if TM-score is too low
         {
             double TMtmp=approx_TM(xlen, ylen, a_opt,
-                                   xa, ya, t0, u0, invmap0, mol_type);
+                xa, ya, t0, u0, invmap0, mol_type);
 
             if (TMtmp<0.5*TMcut)
             {
                 TM1=TM2=TM3=TM4=TM5=TMtmp;
                 clean_up_after_approx_TM(invmap0, invmap, score, path, val,
-                                         xtm, ytm, xt, r1, r2, xlen, minlen);
+                    xtm, ytm, xt, r1, r2, xlen, minlen);
                 return 2;
             }
         }
@@ -4073,8 +4067,8 @@ int TMalign_main(double **xa, double **ya,
         /************************************************************/
         get_initial_ss(path, val, secx, secy, xlen, ylen, invmap);
         TM = detailed_search(r1, r2, xtm, ytm, xt, xa, ya, xlen, ylen, invmap,
-                             t, u, simplify_step, score_sum_method, local_d0_search, Lnorm,
-                             score_d8, d0);
+            t, u, simplify_step, score_sum_method, local_d0_search, Lnorm,
+            score_d8, d0);
         if (TM>TMmax)
         {
             TMmax = TM;
@@ -4084,8 +4078,8 @@ int TMalign_main(double **xa, double **ya,
         if (TM > TMmax*0.2)
         {
             TM = DP_iter(r1, r2, xtm, ytm, xt, path, val, xa, ya,
-                         xlen, ylen, t, u, invmap, 0, 2, (fast_opt)?2:30,
-                         local_d0_search, D0_MIN, Lnorm, d0, score_d8);
+                xlen, ylen, t, u, invmap, 0, 2, (fast_opt)?2:30,
+                local_d0_search, D0_MIN, Lnorm, d0, score_d8);
             if (TM>TMmax)
             {
                 TMmax = TM;
@@ -4097,13 +4091,13 @@ int TMalign_main(double **xa, double **ya,
         if (TMcut>0) // pre-terminate if TM-score is too low
         {
             double TMtmp=approx_TM(xlen, ylen, a_opt,
-                                   xa, ya, t0, u0, invmap0, mol_type);
+                xa, ya, t0, u0, invmap0, mol_type);
 
             if (TMtmp<0.52*TMcut)
             {
                 TM1=TM2=TM3=TM4=TM5=TMtmp;
                 clean_up_after_approx_TM(invmap0, invmap, score, path, val,
-                                         xtm, ytm, xt, r1, r2, xlen, minlen);
+                    xtm, ytm, xt, r1, r2, xlen, minlen);
                 return 3;
             }
         }
@@ -4113,11 +4107,11 @@ int TMalign_main(double **xa, double **ya,
         /************************************************************/
         //=initial5 in original TM-align
         if (get_initial5( r1, r2, xtm, ytm, path, val, xa, ya,
-                          xlen, ylen, invmap, d0, d0_search, fast_opt, D0_MIN))
+            xlen, ylen, invmap, d0, d0_search, fast_opt, D0_MIN))
         {
             TM = detailed_search(r1, r2, xtm, ytm, xt, xa, ya, xlen, ylen,
-                                 invmap, t, u, simplify_step, score_sum_method,
-                                 local_d0_search, Lnorm, score_d8, d0);
+                invmap, t, u, simplify_step, score_sum_method,
+                local_d0_search, Lnorm, score_d8, d0);
             if (TM>TMmax)
             {
                 TMmax = TM;
@@ -4127,8 +4121,8 @@ int TMalign_main(double **xa, double **ya,
             if (TM > TMmax*ddcc)
             {
                 TM = DP_iter(r1, r2, xtm, ytm, xt, path, val, xa, ya,
-                             xlen, ylen, t, u, invmap, 0, 2, 2, local_d0_search,
-                             D0_MIN, Lnorm, d0, score_d8);
+                    xlen, ylen, t, u, invmap, 0, 2, 2, local_d0_search,
+                    D0_MIN, Lnorm, d0, score_d8);
                 if (TM>TMmax)
                 {
                     TMmax = TM;
@@ -4143,13 +4137,13 @@ int TMalign_main(double **xa, double **ya,
         if (TMcut>0) // pre-terminate if TM-score is too low
         {
             double TMtmp=approx_TM(xlen, ylen, a_opt,
-                                   xa, ya, t0, u0, invmap0, mol_type);
+                xa, ya, t0, u0, invmap0, mol_type);
 
             if (TMtmp<0.54*TMcut)
             {
                 TM1=TM2=TM3=TM4=TM5=TMtmp;
                 clean_up_after_approx_TM(invmap0, invmap, score, path, val,
-                                         xtm, ytm, xt, r1, r2, xlen, minlen);
+                    xtm, ytm, xt, r1, r2, xlen, minlen);
                 return 4;
             }
         }
@@ -4159,10 +4153,10 @@ int TMalign_main(double **xa, double **ya,
         /********************************************************************/
         //=initial3 in original TM-align
         get_initial_ssplus(r1, r2, score, path, val, secx, secy, xa, ya,
-                           xlen, ylen, invmap0, invmap, D0_MIN, d0);
+            xlen, ylen, invmap0, invmap, D0_MIN, d0);
         TM = detailed_search(r1, r2, xtm, ytm, xt, xa, ya, xlen, ylen, invmap,
-                             t, u, simplify_step, score_sum_method, local_d0_search, Lnorm,
-                             score_d8, d0);
+             t, u, simplify_step, score_sum_method, local_d0_search, Lnorm,
+             score_d8, d0);
         if (TM>TMmax)
         {
             TMmax = TM;
@@ -4172,8 +4166,8 @@ int TMalign_main(double **xa, double **ya,
         if (TM > TMmax*ddcc)
         {
             TM = DP_iter(r1, r2, xtm, ytm, xt, path, val, xa, ya,
-                         xlen, ylen, t, u, invmap, 0, 2, (fast_opt)?2:30,
-                         local_d0_search, D0_MIN, Lnorm, d0, score_d8);
+                xlen, ylen, t, u, invmap, 0, 2, (fast_opt)?2:30,
+                local_d0_search, D0_MIN, Lnorm, d0, score_d8);
             if (TM>TMmax)
             {
                 TMmax = TM;
@@ -4185,13 +4179,13 @@ int TMalign_main(double **xa, double **ya,
         if (TMcut>0) // pre-terminate if TM-score is too low
         {
             double TMtmp=approx_TM(xlen, ylen, a_opt,
-                                   xa, ya, t0, u0, invmap0, mol_type);
+                xa, ya, t0, u0, invmap0, mol_type);
 
             if (TMtmp<0.56*TMcut)
             {
                 TM1=TM2=TM3=TM4=TM5=TMtmp;
                 clean_up_after_approx_TM(invmap0, invmap, score, path, val,
-                                         xtm, ytm, xt, r1, r2, xlen, minlen);
+                    xtm, ytm, xt, r1, r2, xlen, minlen);
                 return 5;
             }
         }
@@ -4201,10 +4195,10 @@ int TMalign_main(double **xa, double **ya,
         /*******************************************************************/
         //=initial4 in original TM-align
         get_initial_fgt(r1, r2, xtm, ytm, xa, ya, xlen, ylen,
-                        invmap, d0, d0_search, dcu0, fast_opt, t, u);
+            invmap, d0, d0_search, dcu0, fast_opt, t, u);
         TM = detailed_search(r1, r2, xtm, ytm, xt, xa, ya, xlen, ylen, invmap,
-                             t, u, simplify_step, score_sum_method, local_d0_search, Lnorm,
-                             score_d8, d0);
+            t, u, simplify_step, score_sum_method, local_d0_search, Lnorm,
+            score_d8, d0);
         if (TM>TMmax)
         {
             TMmax = TM;
@@ -4214,8 +4208,8 @@ int TMalign_main(double **xa, double **ya,
         if (TM > TMmax*ddcc)
         {
             TM = DP_iter(r1, r2, xtm, ytm, xt, path, val, xa, ya,
-                         xlen, ylen, t, u, invmap, 1, 2, 2, local_d0_search, D0_MIN,
-                         Lnorm, d0, score_d8);
+                xlen, ylen, t, u, invmap, 1, 2, 2, local_d0_search, D0_MIN,
+                Lnorm, d0, score_d8);
             if (TM>TMmax)
             {
                 TMmax = TM;
@@ -4227,13 +4221,13 @@ int TMalign_main(double **xa, double **ya,
         if (TMcut>0) // pre-terminate if TM-score is too low
         {
             double TMtmp=approx_TM(xlen, ylen, a_opt,
-                                   xa, ya, t0, u0, invmap0, mol_type);
+                xa, ya, t0, u0, invmap0, mol_type);
 
             if (TMtmp<0.58*TMcut)
             {
                 TM1=TM2=TM3=TM4=TM5=TMtmp;
                 clean_up_after_approx_TM(invmap0, invmap, score, path, val,
-                                         xtm, ytm, xt, r1, r2, xlen, minlen);
+                    xtm, ytm, xt, r1, r2, xlen, minlen);
                 return 6;
             }
         }
@@ -4268,15 +4262,15 @@ int TMalign_main(double **xa, double **ya,
             int prevLnorm = Lnorm;
             double prevd0 = d0;
             TM_ali = standard_TMscore(r1, r2, xtm, ytm, xt, xa, ya,
-                                      xlen, ylen, invmap, L_ali, rmsd_ali, D0_MIN, Lnorm, d0,
-                                      d0_search, score_d8, t, u, mol_type);
+                xlen, ylen, invmap, L_ali, rmsd_ali, D0_MIN, Lnorm, d0,
+                d0_search, score_d8, t, u, mol_type);
             D0_MIN = prevD0_MIN;
             Lnorm = prevLnorm;
             d0 = prevd0;
 
             TM = detailed_search_standard(r1, r2, xtm, ytm, xt, xa, ya,
-                                          xlen, ylen, invmap, t, u, 40, 8, local_d0_search, true, Lnorm,
-                                          score_d8, d0);
+                xlen, ylen, invmap, t, u, 40, 8, local_d0_search, true, Lnorm,
+                score_d8, d0);
             if (TM > TMmax)
             {
                 TMmax = TM;
@@ -4284,8 +4278,8 @@ int TMalign_main(double **xa, double **ya,
             }
             // Different from get_initial, get_initial_ss and get_initial_ssplus
             TM = DP_iter(r1, r2, xtm, ytm, xt, path, val, xa, ya,
-                         xlen, ylen, t, u, invmap, 0, 2, (fast_opt)?2:30,
-                         local_d0_search, D0_MIN, Lnorm, d0, score_d8);
+                xlen, ylen, t, u, invmap, 0, 2, (fast_opt)?2:30,
+                local_d0_search, D0_MIN, Lnorm, d0, score_d8);
             if (TM>TMmax)
             {
                 TMmax = TM;
@@ -4320,13 +4314,13 @@ int TMalign_main(double **xa, double **ya,
     if (TMcut>0)
     {
         double TMtmp=approx_TM(xlen, ylen, a_opt,
-                               xa, ya, t0, u0, invmap0, mol_type);
+            xa, ya, t0, u0, invmap0, mol_type);
 
         if (TMtmp<0.6*TMcut)
         {
             TM1=TM2=TM3=TM4=TM5=TMtmp;
             clean_up_after_approx_TM(invmap0, invmap, score, path, val,
-                                     xtm, ytm, xt, r1, r2, xlen, minlen);
+                xtm, ytm, xt, r1, r2, xlen, minlen);
             return 7;
         }
     }
@@ -4340,8 +4334,8 @@ int TMalign_main(double **xa, double **ya,
     if (fast_opt) simplify_step=40;
     score_sum_method=8;
     TM = detailed_search_standard(r1, r2, xtm, ytm, xt, xa, ya, xlen, ylen,
-                                  invmap0, t, u, simplify_step, score_sum_method, local_d0_search,
-                                  false, Lnorm, score_d8, d0);
+        invmap0, t, u, simplify_step, score_sum_method, local_d0_search,
+        false, Lnorm, score_d8, d0);
 
     //select pairs with dis<d8 for final TMscore computation and output alignment
     int k=0;
@@ -4404,7 +4398,7 @@ int TMalign_main(double **xa, double **ya,
     d0_0=d0A;
     local_d0_search = d0_search;
     TM1 = TMscore8_search(r1, r2, xtm, ytm, xt, n_ali8, t0, u0, simplify_step,
-                          score_sum_method, &rmsd, local_d0_search, Lnorm, score_d8, d0);
+        score_sum_method, &rmsd, local_d0_search, Lnorm, score_d8, d0);
     TM_0 = TM1;
 
     //normalized by length of structure B
@@ -4412,7 +4406,7 @@ int TMalign_main(double **xa, double **ya,
     d0B=d0;
     local_d0_search = d0_search;
     TM2 = TMscore8_search(r1, r2, xtm, ytm, xt, n_ali8, t, u, simplify_step,
-                          score_sum_method, &rmsd, local_d0_search, Lnorm, score_d8, d0);
+        score_sum_method, &rmsd, local_d0_search, Lnorm, score_d8, d0);
 
     double Lnorm_d0;
     if (a_opt>0)
@@ -4425,22 +4419,22 @@ int TMalign_main(double **xa, double **ya,
         local_d0_search = d0_search;
 
         TM3 = TMscore8_search(r1, r2, xtm, ytm, xt, n_ali8, t0, u0,
-                              simplify_step, score_sum_method, &rmsd, local_d0_search, Lnorm,
-                              score_d8, d0);
+            simplify_step, score_sum_method, &rmsd, local_d0_search, Lnorm,
+            score_d8, d0);
         TM_0=TM3;
     }
     if (u_opt)
     {
         //normalized by user assigned length
         parameter_set4final(Lnorm_ass, D0_MIN, Lnorm,
-                            d0, d0_search, mol_type);
+            d0, d0_search, mol_type);
         d0u=d0;
         d0_0=d0u;
         Lnorm_0=Lnorm_ass;
         local_d0_search = d0_search;
         TM4 = TMscore8_search(r1, r2, xtm, ytm, xt, n_ali8, t0, u0,
-                              simplify_step, score_sum_method, &rmsd, local_d0_search, Lnorm,
-                              score_d8, d0);
+            simplify_step, score_sum_method, &rmsd, local_d0_search, Lnorm,
+            score_d8, d0);
         TM_0=TM4;
     }
     if (d_opt)
@@ -4453,8 +4447,8 @@ int TMalign_main(double **xa, double **ya,
         Lnorm_d0=Lnorm_0;
         local_d0_search = d0_search;
         TM5 = TMscore8_search(r1, r2, xtm, ytm, xt, n_ali8, t0, u0,
-                              simplify_step, score_sum_method, &rmsd, local_d0_search, Lnorm,
-                              score_d8, d0);
+            simplify_step, score_sum_method, &rmsd, local_d0_search, Lnorm,
+            score_d8, d0);
         TM_0=TM5;
     }
 
@@ -4463,7 +4457,7 @@ int TMalign_main(double **xa, double **ya,
     seqxA.assign(ali_len,'-');
     seqM.assign( ali_len,' ');
     seqyA.assign(ali_len,'-');
-
+    
     //do_rotation(xa, xt, xlen, t, u);
     do_rotation(xa, xt, xlen, t0, u0);
 
@@ -4476,7 +4470,7 @@ int TMalign_main(double **xa, double **ya,
             //align x to gap
             seqxA[kk]=seqx[i];
             seqyA[kk]='-';
-            seqM[kk]=' ';
+            seqM[kk]=' ';                    
             kk++;
         }
 
@@ -4495,7 +4489,7 @@ int TMalign_main(double **xa, double **ya,
         d=sqrt(dist(&xt[m1[k]][0], &ya[m2[k]][0]));
         if(d<d0_out) seqM[kk]=':';
         else         seqM[kk]='.';
-        kk++;
+        kk++;  
         i_old=m1[k]+1;
         j_old=m2[k]+1;
     }
@@ -4508,7 +4502,7 @@ int TMalign_main(double **xa, double **ya,
         seqyA[kk]='-';
         seqM[kk]=' ';
         kk++;
-    }
+    }    
     for(int j=j_old; j<ylen; j++)
     {
         //align y to gap
@@ -4523,7 +4517,7 @@ int TMalign_main(double **xa, double **ya,
 
     /* free memory */
     clean_up_after_approx_TM(invmap0, invmap, score, path, val,
-                             xtm, ytm, xt, r1, r2, xlen, minlen);
+        xtm, ytm, xt, r1, r2, xlen, minlen);
     delete [] m1;
     delete [] m2;
     return 0; // zero for no exception
@@ -4532,19 +4526,19 @@ int TMalign_main(double **xa, double **ya,
 /* entry function for TM-align with circular permutation
  * i_opt, a_opt, u_opt, d_opt, TMcut are not implemented yet */
 int CPalign_main(double **xa, double **ya,
-                 const char *seqx, const char *seqy, const char *secx, const char *secy,
-                 double t0[3], double u0[3][3],
-                 double &TM1, double &TM2, double &TM3, double &TM4, double &TM5,
-                 double &d0_0, double &TM_0,
-                 double &d0A, double &d0B, double &d0u, double &d0a, double &d0_out,
-                 string &seqM, string &seqxA, string &seqyA,
-                 double &rmsd0, int &L_ali, double &Liden,
-                 double &TM_ali, double &rmsd_ali, int &n_ali, int &n_ali8,
-                 const int xlen, const int ylen,
-                 const vector<string> sequence, const double Lnorm_ass,
-                 const double d0_scale, const int i_opt, const int a_opt,
-                 const bool u_opt, const bool d_opt, const bool fast_opt,
-                 const int mol_type, const double TMcut=-1)
+    const char *seqx, const char *seqy, const char *secx, const char *secy,
+    double t0[3], double u0[3][3],
+    double &TM1, double &TM2, double &TM3, double &TM4, double &TM5,
+    double &d0_0, double &TM_0,
+    double &d0A, double &d0B, double &d0u, double &d0a, double &d0_out,
+    string &seqM, string &seqxA, string &seqyA,
+    double &rmsd0, int &L_ali, double &Liden,
+    double &TM_ali, double &rmsd_ali, int &n_ali, int &n_ali8,
+    const int xlen, const int ylen,
+    const vector<string> sequence, const double Lnorm_ass,
+    const double d0_scale, const int i_opt, const int a_opt,
+    const bool u_opt, const bool d_opt, const bool fast_opt,
+    const int mol_type, const double TMcut=-1)
 {
     char   *seqx_cp, *seqy_cp; // for the protein sequence 
     char   *secx_cp, *secy_cp; // for the secondary structure 
@@ -4569,15 +4563,15 @@ int CPalign_main(double **xa, double **ya,
     }
     seqx_cp[2*xlen]=0;
     secx_cp[2*xlen]=0;
-
+    
     /* fTM-align alignment */
     double TM1_cp,TM2_cp;
     TMalign_main(xa_cp, ya, seqx_cp, seqy, secx_cp, secy,
-                 t0, u0, TM1_cp, TM2_cp, TM3, TM4, TM5,
-                 d0_0, TM_0, d0A, d0B, d0u, d0a, d0_out, seqM, seqxA_cp, seqyA_cp,
-                 rmsd0, L_ali, Liden, TM_ali, rmsd_ali, n_ali, n_ali8,
-                 xlen*2, ylen, sequence, Lnorm_ass, d0_scale,
-                 0, false, false, false, true, mol_type, -1);
+        t0, u0, TM1_cp, TM2_cp, TM3, TM4, TM5,
+        d0_0, TM_0, d0A, d0B, d0u, d0a, d0_out, seqM, seqxA_cp, seqyA_cp,
+        rmsd0, L_ali, Liden, TM_ali, rmsd_ali, n_ali, n_ali8,
+        xlen*2, ylen, sequence, Lnorm_ass, d0_scale,
+        0, false, false, false, true, mol_type, -1);
 
     /* delete gap in seqxA_cp */
     r=0;
@@ -4618,11 +4612,11 @@ int CPalign_main(double **xa, double **ya,
 
     /* fTM-align alignment */
     TMalign_main(xa, ya, seqx, seqy, secx, secy,
-                 t0, u0, TM1, TM2, TM3, TM4, TM5,
-                 d0_0, TM_0, d0A, d0B, d0u, d0a, d0_out, seqM, seqxA, seqyA,
-                 rmsd0, L_ali, Liden, TM_ali, rmsd_ali, n_ali, n_ali8,
-                 xlen, ylen, sequence, Lnorm_ass, d0_scale,
-                 0, false, false, false, true, mol_type, -1);
+        t0, u0, TM1, TM2, TM3, TM4, TM5,
+        d0_0, TM_0, d0A, d0B, d0u, d0a, d0_out, seqM, seqxA, seqyA,
+        rmsd0, L_ali, Liden, TM_ali, rmsd_ali, n_ali, n_ali8,
+        xlen, ylen, sequence, Lnorm_ass, d0_scale,
+        0, false, false, false, true, mol_type, -1);
 
     /* do not use cricular permutation of number of aligned residues is not
      * larger than sequence-order dependent alignment */
@@ -4649,11 +4643,11 @@ int CPalign_main(double **xa, double **ya,
 
     /* full TM-align */
     TMalign_main(xa_cp, ya, seqx_cp, seqy, secx_cp, secy,
-                 t0, u0, TM1, TM2, TM3, TM4, TM5,
-                 d0_0, TM_0, d0A, d0B, d0u, d0a, d0_out, seqM, seqxA_cp, seqyA_cp,
-                 rmsd0, L_ali, Liden, TM_ali, rmsd_ali, n_ali, n_ali8,
-                 xlen, ylen, sequence, Lnorm_ass, d0_scale,
-                 i_opt, a_opt, u_opt, d_opt, fast_opt, mol_type, TMcut);
+        t0, u0, TM1, TM2, TM3, TM4, TM5,
+        d0_0, TM_0, d0A, d0B, d0u, d0a, d0_out, seqM, seqxA_cp, seqyA_cp,
+        rmsd0, L_ali, Liden, TM_ali, rmsd_ali, n_ali, n_ali8,
+        xlen, ylen, sequence, Lnorm_ass, d0_scale,
+        i_opt, a_opt, u_opt, d_opt, fast_opt, mol_type, TMcut);
 
     /* correct alignment
      * r - residue index in the original unaligned sequence 
@@ -4664,7 +4658,7 @@ int CPalign_main(double **xa, double **ya,
         for (i=0;i<seqxA_cp.size();i++)
         {
             r+=(seqxA_cp[i]!='-');
-            if (r>=(xlen-cp_point))
+            if (r>=(xlen-cp_point)) 
             {
                 i++;
                 break;
@@ -4743,7 +4737,7 @@ int main(int argc, char *argv[])
         {
             fname_super = argv[i + 1];     o_opt = true; i++;
         }
-        else if ( (!strcmp(argv[i],"-u") ||
+        else if ( (!strcmp(argv[i],"-u") || 
                    !strcmp(argv[i],"-L")) && i < (argc-1) )
         {
             Lnorm_ass = atof(argv[i + 1]); u_opt = true; i++;
@@ -4752,7 +4746,7 @@ int main(int argc, char *argv[])
         {
             if (!strcmp(argv[i + 1], "T"))      a_opt=true;
             else if (!strcmp(argv[i + 1], "F")) a_opt=false;
-            else
+            else 
             {
                 a_opt=atoi(argv[i + 1]);
                 if (a_opt!=-2 && a_opt!=-1 && a_opt!=1)
@@ -4861,8 +4855,8 @@ int main(int argc, char *argv[])
         else PrintErrorAndQuit(string("ERROR! Undefined option ")+argv[i]);
     }
 
-    if(xname.size()==0 || (yname.size()==0 && dir_opt.size()==0) ||
-       (yname.size()    && dir_opt.size()))
+    if(xname.size()==0 || (yname.size()==0 && dir_opt.size()==0) || 
+                          (yname.size()    && dir_opt.size()))
     {
         if (h_opt) print_help(h_opt);
         if (v_opt)
@@ -4959,9 +4953,9 @@ int main(int argc, char *argv[])
     char   *seqx, *seqy;       // for the protein sequence 
     char   *secx, *secy;       // for the secondary structure 
     double **xa, **ya;         // for input vectors xa[0...xlen-1][0..2] and
-    // ya[0...ylen-1][0..2], in general,
-    // ya is regarded as native structure
-    // --> superpose xa onto ya
+                               // ya[0...ylen-1][0..2], in general,
+                               // ya is regarded as native structure 
+                               // --> superpose xa onto ya
     vector<string> resi_vec1;  // residue index for chain1
     vector<string> resi_vec2;  // residue index for chain2
 
@@ -4971,7 +4965,7 @@ int main(int argc, char *argv[])
         /* parse chain 1 */
         xname=chain1_list[i];
         xchainnum=get_PDB_lines(xname, PDB_lines1, chainID_list1,
-                                mol_vec1, ter_opt, infmt1_opt, atom_opt, split_opt, het_opt);
+            mol_vec1, ter_opt, infmt1_opt, atom_opt, split_opt, het_opt);
         if (!xchainnum)
         {
             cerr<<"Warning! Cannot parse file: "<<xname
@@ -4996,8 +4990,8 @@ int main(int argc, char *argv[])
             NewArray(&xa, xlen, 3);
             seqx = new char[xlen + 1];
             secx = new char[xlen + 1];
-            xlen = read_PDB(PDB_lines1[chain_i], xa, seqx,
-                            resi_vec1, byresi_opt?byresi_opt:o_opt);
+            xlen = read_PDB(PDB_lines1[chain_i], xa, seqx, 
+                resi_vec1, byresi_opt?byresi_opt:o_opt);
             if (mirror_opt) for (r=0;r<xlen;r++) xa[r][2]=-xa[r][2];
             make_sec(xa, xlen, secx); // secondary structure assignment
 
@@ -5008,8 +5002,8 @@ int main(int argc, char *argv[])
                 {
                     yname=chain2_list[j];
                     ychainnum=get_PDB_lines(yname, PDB_lines2, chainID_list2,
-                                            mol_vec2, ter_opt, infmt2_opt, atom_opt, split_opt,
-                                            het_opt);
+                        mol_vec2, ter_opt, infmt2_opt, atom_opt, split_opt,
+                        het_opt);
                     if (!ychainnum)
                     {
                         cerr<<"Warning! Cannot parse file: "<<yname
@@ -5036,10 +5030,10 @@ int main(int argc, char *argv[])
                     seqy = new char[ylen + 1];
                     secy = new char[ylen + 1];
                     ylen = read_PDB(PDB_lines2[chain_j], ya, seqy,
-                                    resi_vec2, byresi_opt?byresi_opt:o_opt);
+                        resi_vec2, byresi_opt?byresi_opt:o_opt);
                     make_sec(ya, ylen, secy);
                     if (byresi_opt) extract_aln_from_resi(sequence,
-                                                          seqx,seqy,resi_vec1,resi_vec2,byresi_opt);
+                        seqx,seqy,resi_vec1,resi_vec2,byresi_opt);
 
                     /* declare variable specific to this pair of TMalign */
                     double t0[3], u0[3][3];
@@ -5058,42 +5052,42 @@ int main(int argc, char *argv[])
 
                     /* entry function for structure alignment */
                     if (cp_opt) CPalign_main(
-                                xa, ya, seqx, seqy, secx, secy,
-                                t0, u0, TM1, TM2, TM3, TM4, TM5,
-                                d0_0, TM_0, d0A, d0B, d0u, d0a, d0_out,
-                                seqM, seqxA, seqyA,
-                                rmsd0, L_ali, Liden, TM_ali, rmsd_ali, n_ali, n_ali8,
-                                xlen, ylen, sequence, Lnorm_ass, d0_scale,
-                                i_opt, a_opt, u_opt, d_opt, fast_opt,
-                                mol_vec1[chain_i]+mol_vec2[chain_j],TMcut);
+                        xa, ya, seqx, seqy, secx, secy,
+                        t0, u0, TM1, TM2, TM3, TM4, TM5,
+                        d0_0, TM_0, d0A, d0B, d0u, d0a, d0_out,
+                        seqM, seqxA, seqyA,
+                        rmsd0, L_ali, Liden, TM_ali, rmsd_ali, n_ali, n_ali8,
+                        xlen, ylen, sequence, Lnorm_ass, d0_scale,
+                        i_opt, a_opt, u_opt, d_opt, fast_opt,
+                        mol_vec1[chain_i]+mol_vec2[chain_j],TMcut);
                     else TMalign_main(
-                                xa, ya, seqx, seqy, secx, secy,
-                                t0, u0, TM1, TM2, TM3, TM4, TM5,
-                                d0_0, TM_0, d0A, d0B, d0u, d0a, d0_out,
-                                seqM, seqxA, seqyA,
-                                rmsd0, L_ali, Liden, TM_ali, rmsd_ali, n_ali, n_ali8,
-                                xlen, ylen, sequence, Lnorm_ass, d0_scale,
-                                i_opt, a_opt, u_opt, d_opt, fast_opt,
-                                mol_vec1[chain_i]+mol_vec2[chain_j],TMcut);
+                        xa, ya, seqx, seqy, secx, secy,
+                        t0, u0, TM1, TM2, TM3, TM4, TM5,
+                        d0_0, TM_0, d0A, d0B, d0u, d0a, d0_out,
+                        seqM, seqxA, seqyA,
+                        rmsd0, L_ali, Liden, TM_ali, rmsd_ali, n_ali, n_ali8,
+                        xlen, ylen, sequence, Lnorm_ass, d0_scale,
+                        i_opt, a_opt, u_opt, d_opt, fast_opt,
+                        mol_vec1[chain_i]+mol_vec2[chain_j],TMcut);
 
                     /* print result */
                     if (outfmt_opt==0) print_version();
                     output_results(
-                            xname.substr(dir1_opt.size()),
-                            yname.substr(dir2_opt.size()),
-                            chainID_list1[chain_i].c_str(),
-                            chainID_list2[chain_j].c_str(),
-                            xlen, ylen, t0, u0, TM1, TM2,
-                            TM3, TM4, TM5, rmsd0, d0_out,
-                            seqM.c_str(), seqxA.c_str(), seqyA.c_str(), Liden,
-                            n_ali8, L_ali, TM_ali, rmsd_ali,
-                            TM_0, d0_0, d0A, d0B,
-                            Lnorm_ass, d0_scale, d0a, d0u,
-                            (m_opt?fname_matrix+chainID_list1[chain_i]:"").c_str(),
-                            outfmt_opt, ter_opt,
-                            (o_opt?fname_super+chainID_list1[chain_i]:"").c_str(),
-                            i_opt, a_opt, u_opt, d_opt,mirror_opt,
-                            resi_vec1,resi_vec2);
+                        xname.substr(dir1_opt.size()),
+                        yname.substr(dir2_opt.size()),
+                        chainID_list1[chain_i].c_str(),
+                        chainID_list2[chain_j].c_str(),
+                        xlen, ylen, t0, u0, TM1, TM2, 
+                        TM3, TM4, TM5, rmsd0, d0_out,
+                        seqM.c_str(), seqxA.c_str(), seqyA.c_str(), Liden,
+                        n_ali8, L_ali, TM_ali, rmsd_ali,
+                        TM_0, d0_0, d0A, d0B,
+                        Lnorm_ass, d0_scale, d0a, d0u, 
+                        (m_opt?fname_matrix+chainID_list1[chain_i]:"").c_str(),
+                        outfmt_opt, ter_opt, 
+                        (o_opt?fname_super+chainID_list1[chain_i]:"").c_str(),
+                        i_opt, a_opt, u_opt, d_opt,mirror_opt,
+                        resi_vec1,resi_vec2);
 
                     /* Done! Free memory */
                     seqM.clear();
