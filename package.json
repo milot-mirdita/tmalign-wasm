@@ -1,6 +1,6 @@
 {
   "name": "tmalign-wasm",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "TMalign structure aligner port to WASM",
   "main": "tmalign.js",
   "repository": {
@@ -8,9 +8,9 @@
     "url": "git+https://github.com/milot-mirdita/tmalign-wasm.git"
   },
   "files": [
-      "tmalign.js",
-      "tmalign-wasm.js",
-      "tmalign-wasm.wasm"
+    "tmalign.js",
+    "tmalign-wasm.js",
+    "tmalign-wasm.wasm"
   ],
   "keywords": [
     "proteins",
@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/milot-mirdita/tmalign-wasm/issues"
   },
-  "homepage": "https://github.com/milot-mirdita/tmalign-wasm#readme"
+  "homepage": "https://github.com/milot-mirdita/tmalign-wasm#readme",
+  "dependencies": {
+    "patch-package": "^6.4.7"
+  }
 }
