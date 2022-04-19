@@ -8,7 +8,7 @@ function tmalign(pdb1, pdb2, alignment = null) {
             locateFile: () => tmalignWasm,
             print: (msg) => buffer += msg + "\n"
         }).then((instance) => {
-		    const cmd = ['/pdb1.pdb', '/pdb2.pdb', '-m', '/matrix.txt'];
+            const cmd = ['/pdb1.pdb', '/pdb2.pdb', '-m', '/matrix.txt'];
             instance.FS.writeFile('/pdb1.pdb', pdb1);
             instance.FS.writeFile('/pdb2.pdb', pdb2);
             if (alignment) {
