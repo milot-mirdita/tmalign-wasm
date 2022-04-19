@@ -23,7 +23,4 @@
     "url": "https://github.com/milot-mirdita/tmalign-wasm/issues"
   },
   "homepage": "https://github.com/milot-mirdita/tmalign-wasm#readme",
-  "dependencies": {
-    "patch-package": "^6.4.7"
-  }
 }
