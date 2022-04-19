@@ -1,24 +1,21 @@
 import { default as createTmalign } from './tmalign-wasm.js'
 import tmalignWasm from './tmalign-wasm.wasm'
 
-function tmalign(pdb1, pdb2, alignment) {
+function tmalign(pdb1, pdb2, alignment = null) {
     return new Promise((resolve, reject) => {
         let buffer = "";
         createTmalign({
             locateFile: () => tmalignWasm,
             print: (msg) => buffer += msg + "\n"
         }).then((instance) => {
+		    const cmd = ['/pdb1.pdb', '/pdb2.pdb', '-m', '/matrix.txt'];
             instance.FS.writeFile('/pdb1.pdb', pdb1);
             instance.FS.writeFile('/pdb2.pdb', pdb2);
-            instance.FS.writeFile('/aln.fa', alignment);
-            const err = instance.callMain([
-                "/pdb1.pdb",
-                "/pdb2.pdb",
-                "-I",
-                "/aln.fa",
-                "-m",
-                "/matrix.txt"
-            ]);
+            if (alignment) {
+                cmd.push('-I', '/aln.fa');
+                instance.FS.writeFile('/aln.fa', alignment);
+            }
+            const err = instance.callMain(cmd);
             if (err == 0) {
                 const matrix = instance.FS.readFile('/matrix.txt', { encoding: 'utf8' });
                 resolve({ output: buffer, matrix: matrix })
