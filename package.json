@@ -1,6 +1,6 @@
 {
   "name": "tmalign-wasm",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "TMalign structure aligner port to WASM",
   "main": "tmalign.js",
   "repository": {
