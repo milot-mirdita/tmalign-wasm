@@ -89,9 +89,12 @@ function getCigar(seq1, seq2) {
 
 function parse(output) {
     const lines = output.split('\n');
-    var chain1, chain2, tmScore;
+    var chain1, chain2, tmScore, rmsd;
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
+        if (line.startsWith('Aligned length=')) {
+            rmsd = parseFloat(line.split(" ")[8]);
+        }
         if (line.startsWith("Name of Chain_1:")) {
             chain1 = line.split(" ")[3].replace(/^\s+|\s+$/g, '');
         }
@@ -132,6 +135,7 @@ function parse(output) {
                 dbEndPos: seq2StartPos + seq2End + 1,
                 cigar: cigar.substring(0, lastM + 1),
                 tmScore,
+                rmsd,
                 qAln: queryAligned.substring(0, lastMatchIndex + 1),
                 tAln: targetAligned.substring(0, lastMatchIndex + 1)
             };
